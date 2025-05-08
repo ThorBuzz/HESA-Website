@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Health and Allied Sciences KNUST</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-dot active"></div>
+        <div class="nav-dot"></div>
+        <div class="nav-dot"></div>
+        <div class="nav-dot"></div>
+    </nav>
+
+    <section id="section1">
+        <div class="floating-shapes">
+            <div class="shape1"></div>
+            <div class="shape2"></div>
+            <div class="shape3"></div>
+            <div class="shape4"></div>
+        </div>
+        <div class="content">
+            <h1>Welcome to Health and Allied Sciences KNUST</h1>
+            <p>The Future of health care training in Ghana and Beyond</p>
+            <a href="#section2" class="btn">Explore More</a>
+            <a href="{{ url_for('main.home') }}" class="btn">Enter Homepage</a>
+        </div>
+        <div class="scroll-indicator"></div>
+    </section>
+
+    <section id="section2">
+        <div class="floating-shapes">
+            <div class="shape1"></div>
+            <div class="shape2"></div>
+            <div class="shape3"></div>
+            <div class="shape4"></div>
+        </div>
+        <div class="content">
+            <h1>Enter Our Blog Page</h1>
+            <p>Get UpToDate on the events surrounding your College</p>
+            <a href="#section3" class="btn">Continue Journey</a>
+            <a href="{{ url_for('blog.index') }}" class="btn">Visit Blog</a>
+        </div>
+        <div class="scroll-indicator"></div>
+    </section>
+
+    <section id="section3">
+        <div class="floating-shapes">
+            <div class="shape1"></div>
+            <div class="shape2"></div>
+            <div class="shape3"></div>
+            <div class="shape4"></div>
+        </div>
+        <div class="content">
+            <h1>Are You a Fresher, or new here?</h1>
+            <p>Register to gain access to features like voting and other roles</p>
+            <a href="#section4" class="btn">Next Section</a>
+            <a href="{{ url_for('auth.register') }}" class="btn">Sign Up Here</a>
+        </div>
+        <div class="scroll-indicator"></div>
+    </section>
+
+    <section id="section4">
+        <div class="floating-shapes">
+            <div class="shape1"></div>
+            <div class="shape2"></div>
+            <div class="shape3"></div>
+            <div class="shape4"></div>
+        </div>
+        <div class="content">
+            <h1>Get Started</h1>
+            <p>Begin your journey with our amazing platform</p>
+            <a href="#section1" class="btn">Back to Top</a>
+            <a href="{{ url_for('main.home') }}" class="btn">Enter Homepage</a>
+        </div>
+    </section>
+
+    <script>
+        // Navigation dots functionality
+        const sections = document.querySelectorAll('section');
+        const navDots = document.querySelectorAll('.nav-dot');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - sectionHeight / 3)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navDots.forEach((dot, index) => {
+                dot.classList.remove('active');
+                if (index === Array.from(sections).findIndex(section => section.id === current)) {
+                    dot.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll for navigation
+        navDots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                window.scrollTo({
+                    top: sections[index].offsetTop,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Intersection Observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.content').forEach((el) => observer.observe(el));
+    </script>
+</body>
+</html>

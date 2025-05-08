@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+
+{% block title %}Create New Personality - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+<!-- Include summernote CSS -->
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2>{{ title }}</h2>
+                    <p>Feature a new Personality of the Week</p>
+                </div>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {% if form.name.errors %}
+                            {{ form.name(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.name(class="form-control") }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {% if form.title.errors %}
+                            {{ form.title(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.title.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.title(class="form-control") }}
+                        {% endif %}
+                        <small class="text-muted">E.g., "Student Leader", "Pioneering Researcher"</small>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.school.label(class="form-label") }}
+                        {% if form.school.errors %}
+                            {{ form.school(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.school.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.school(class="form-control") }}
+                        {% endif %}
+                        <small class="text-muted">E.g., "School of Medicine and Dentistry"</small>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.year.label(class="form-label") }}
+                        {% if form.year.errors %}
+                            {{ form.year(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.year.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.year(class="form-control") }}
+                        {% endif %}
+                        <small class="text-muted">E.g., "4th Year", "Final Year"</small>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.high_school.label(class="form-label") }}
+                        {% if form.high_school.errors %}
+                            {{ form.high_school(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.high_school.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.high_school(class="form-control") }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.quote.label(class="form-label") }}
+                        {% if form.quote.errors %}
+                            {{ form.quote(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.quote.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.quote(class="form-control") }}
+                        {% endif %}
+                        <small class="text-muted">A memorable quote or motto</small>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.bio.label(class="form-label") }}
+                        {% if form.bio.errors %}
+                            {{ form.bio(class="form-control summernote is-invalid", rows=10) }}
+                            <div class="invalid-feedback">
+                                {% for error in form.bio.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.bio(class="form-control summernote", rows=10) }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.image.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form.image(class="form-control") }}
+                        </div>
+                        {% if form.image.errors %}
+                            <div class="text-danger">
+                                {% for error in form.image.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Upload a high-quality profile picture (JPG, PNG only)</small>
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        {{ form.is_active(class="form-check-input") }}
+                        {{ form.is_active.label(class="form-check-label") }}
+                        <small class="d-block text-muted">If checked, this will become the active personality on the website.</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{{ url_for('editor.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Include summernote JS -->
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('.summernote').summernote({
+            height: 300,
+            minHeight: 200,
+            maxHeight: 500,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'hr']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,147 @@
+/* Driver specific styles - save to app/static/css/driver.css */
+
+.driver-header {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-left: 4px solid #0d6efd;
+}
+
+.driver-header h1 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.driver-header p {
+    margin: 5px 0 0 0;
+    color: #7f8c8d;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 15px 20px;
+}
+
+.card-header h5 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.status-active {
+    background-color: #e8f5e9;
+    border-left: 4px solid #4caf50;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.status-active h5 {
+    margin: 0 0 5px 0;
+    color: #2e7d32;
+}
+
+.tracking-active {
+    position: relative;
+}
+
+.tracking-status {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.status-indicator {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #f44336;
+    margin-right: 10px;
+}
+
+.status-indicator.active {
+    background: #4caf50;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
+}
+
+.status-text {
+    font-weight: 500;
+    color: #333;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}
+
+.coordinates-display {
+    font-family: monospace;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.tracking-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .tracking-controls {
+        flex-direction: column;
+    }
+    
+    .tracking-controls .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

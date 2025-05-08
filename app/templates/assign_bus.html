@@ -1,0 +1,131 @@
+{% extends "layout.html" %}
+
+{% block title %}Assign Buses - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2>Assign Bus to Driver</h2>
+                    <p>Assign campus shuttle buses to drivers</p>
+                </div>
+                
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group mb-3">
+                        {{ form.bus_id.label(class="form-label") }}
+                        {% if form.bus_id.errors %}
+                            {{ form.bus_id(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.bus_id.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.bus_id(class="form-control") }}
+                        {% endif %}
+                        <small class="text-muted">E.g., "Bus-101", "Bus-102"</small>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.route.label(class="form-label") }}
+                        {% if form.route.errors %}
+                            {{ form.route(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.route.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.route(class="form-control") }}
+                        {% endif %}
+                        <small class="text-muted">E.g., "Main Gate → Faculty Hall", "Commercial Area → Unity Hall"</small>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.driver.label(class="form-label") }}
+                        {% if form.driver.errors %}
+                            {{ form.driver(class="form-select is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.driver.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.driver(class="form-select") }}
+                        {% endif %}
+                        <small class="text-muted">Select a driver to assign to this bus</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{{ url_for('editor.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Current Assignments Table -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Current Bus Assignments</h5>
+                </div>
+                <div class="card-body">
+                    {% if assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Bus ID</th>
+                                    <th>Route</th>
+                                    <th>Driver</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bus in assignments %}
+                                <tr>
+                                    <td>{{ bus.bus_id }}</td>
+                                    <td>{{ bus.route }}</td>
+                                    <td>
+                                        {% if bus.driver_id %}
+                                            {{ bus.driver.username }}
+                                        {% else %}
+                                            <span class="text-muted">Not assigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if bus.status == 'active' %}bg-success{% elif bus.status == 'maintenance' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                            {{ bus.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-primary" 
+                                                onclick="document.getElementById('bus_id').value='{{ bus.bus_id }}';
+                                                        document.getElementById('route').value='{{ bus.route }}';">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No bus assignments have been created yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,251 @@
+{% extends "layout.html" %}
+
+{% block title %}Bus Tracking - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/driver.css') }}">
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet'>
+<style>
+    #tracking-map {
+        width: 100%;
+        height: 400px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .tracking-active {
+        background: #e8f5e9;
+        border-left: 4px solid #4caf50;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+    
+    .coordinates-display {
+        background: #f1f1f1;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-family: monospace;
+        border: 1px solid #ddd;
+    }
+    
+    .tracking-status {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .status-indicator {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #f44336;
+        margin-right: 10px;
+    }
+    
+    .status-indicator.active {
+        background: #4caf50;
+    }
+    
+    .status-text {
+        font-weight: 500;
+    }
+    
+    .tracking-controls {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>Bus Tracking: {{ bus.bus_id }}</h3>
+                        <span class="badge bg-success">ACTIVE</span>
+                    </div>
+                    <p class="mb-0">Route: {{ bus.route }}</p>
+                </div>
+                
+                <div class="card-body">
+                    <div class="tracking-active">
+                        <div class="tracking-status">
+                            <div class="status-indicator active" id="statusIndicator"></div>
+                            <span class="status-text" id="statusText">Tracking Active</span>
+                        </div>
+                        
+                        <p>
+                            <strong>Important:</strong> Keep this page open while driving. Your location is being automatically shared with students to help them locate the shuttle bus.
+                        </p>
+                    </div>
+                    
+                    <div id="tracking-map"></div>
+                    
+                    <div class="coordinates-display">
+                        <div>Current coordinates: <span id="coordinates">Waiting for location...</span></div>
+                        <div>Last update: <span id="lastUpdate">-</span></div>
+                        <div>Update status: <span id="updateStatus">Connecting...</span></div>
+                    </div>
+                    
+                    <div class="tracking-controls">
+                        <a href="{{ url_for('driver.stop_tracking', bus_id=bus.id) }}" class="btn btn-danger">
+                            <i class="fas fa-stop-circle"></i> Stop Tracking
+                        </a>
+                        <button type="button" class="btn btn-secondary" id="pauseButton">
+                            <i class="fas fa-pause"></i> Pause Tracking
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize Mapbox
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZ3ltbmNlYyIsImEiOiJjbTd0ZG40NXMwbmU2Mm1xeXlzdDc5bnhpIn0.lHWC6T2ytLJq9O7pEr3ofg';
+    
+    // Track whether we're actively updating
+    let isTracking = true;
+    let pauseButton = document.getElementById('pauseButton');
+    let statusIndicator = document.getElementById('statusIndicator');
+    let statusText = document.getElementById('statusText');
+    let lastPosition = null;
+    
+    // Initialize map
+    const map = new mapboxgl.Map({
+        container: 'tracking-map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [-1.56927, 6.67233], // Default KNUST coordinates
+        zoom: 15
+    });
+    
+    // Add navigation controls
+    map.addControl(new mapboxgl.NavigationControl());
+    
+    // Add bus marker
+    const busMarker = new mapboxgl.Marker({
+        color: '#f44336'
+    }).setLngLat([-1.56927, 6.67233]).addTo(map);
+    
+    // Function to update location
+    function updateLocation(position) {
+        if (!isTracking) return;
+        
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        lastPosition = { latitude: lat, longitude: lng };
+        
+        // Update marker and map
+        busMarker.setLngLat([lng, lat]);
+        map.setCenter([lng, lat]);
+        
+        // Update display
+        document.getElementById('coordinates').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        
+        // Send update to server
+        sendLocationUpdate(lat, lng);
+    }
+    
+    // Function to send location update to server
+    function sendLocationUpdate(lat, lng) {
+        fetch('{{ url_for("driver.update_location", bus_id=bus.id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                latitude: lat,
+                longitude: lng
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('updateStatus').textContent = 'Success';
+                document.getElementById('updateStatus').style.color = 'green';
+            } else {
+                document.getElementById('updateStatus').textContent = 'Error: ' + data.error;
+                document.getElementById('updateStatus').style.color = 'red';
+            }
+        })
+        .catch(error => {
+            document.getElementById('updateStatus').textContent = 'Connection error';
+            document.getElementById('updateStatus').style.color = 'red';
+            console.error('Error updating location:', error);
+        });
+    }
+    
+    // Function to handle errors
+    function handleLocationError(error) {
+        console.error('Error getting location:', error);
+        document.getElementById('coordinates').textContent = 'Location error: ' + error.message;
+        document.getElementById('updateStatus').textContent = 'Error';
+        document.getElementById('updateStatus').style.color = 'red';
+    }
+    
+    // Start tracking when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if geolocation is available
+        if (navigator.geolocation) {
+            // Watch position with high accuracy
+            navigator.geolocation.watchPosition(
+                updateLocation, 
+                handleLocationError, 
+                { 
+                    enableHighAccuracy: true, 
+                    timeout: 10000, 
+                    maximumAge: 0 
+                }
+            );
+            
+            document.getElementById('updateStatus').textContent = 'Tracking started';
+        } else {
+            document.getElementById('coordinates').textContent = 'Geolocation not available';
+            document.getElementById('updateStatus').textContent = 'Not available';
+            document.getElementById('updateStatus').style.color = 'red';
+        }
+        
+        // Setup pause button
+        pauseButton.addEventListener('click', function() {
+            isTracking = !isTracking;
+            
+            if (isTracking) {
+                this.innerHTML = '<i class="fas fa-pause"></i> Pause Tracking';
+                statusIndicator.classList.add('active');
+                statusText.textContent = 'Tracking Active';
+                // Update with last known position if available
+                if (lastPosition) {
+                    sendLocationUpdate(lastPosition.latitude, lastPosition.longitude);
+                }
+            } else {
+                this.innerHTML = '<i class="fas fa-play"></i> Resume Tracking';
+                statusIndicator.classList.remove('active');
+                statusText.textContent = 'Tracking Paused';
+            }
+        });
+    });
+    
+    // Confirm before leaving the page
+    window.addEventListener('beforeunload', function(e) {
+        if (isTracking) {
+            // Cancel the event
+            e.preventDefault();
+            // Chrome requires returnValue to be set
+            e.returnValue = '';
+            return 'Tracking is still active. Are you sure you want to leave this page?';
+        }
+    });
+</script>
+{% endblock %}

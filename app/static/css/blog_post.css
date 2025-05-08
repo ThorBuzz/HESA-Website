@@ -1,0 +1,289 @@
+/* Blog Post Detail CSS */
+
+/* Article Styles */
+.article {
+    background: white;
+    border-radius: 16px;
+    padding: 3rem;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    transform: translateY(-100px);
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.post-img {
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.post-img img {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.post-img:hover img {
+    transform: scale(1.03);
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #1a365d;
+    position: relative;
+}
+
+.title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: #2563eb;
+}
+
+.meta-top {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    color: #718096;
+}
+
+.meta-top ul {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.meta-top a {
+    color: #718096;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.meta-top a:hover {
+    color: #2563eb;
+}
+
+.meta-top i {
+    margin-right: 8px;
+    color: #2563eb;
+}
+
+.content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #4a5568;
+}
+
+.content p {
+    margin-bottom: 1.5rem;
+}
+
+.content h2, .content h3 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #2d3748;
+}
+
+.content ul, .content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.content li {
+    margin-bottom: 0.5rem;
+}
+
+.content a {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+.content a:hover {
+    text-decoration: none;
+}
+
+blockquote {
+    border-left: 4px solid #2563eb;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    background: #f8fafc;
+    border-radius: 8px;
+    font-style: italic;
+}
+
+/* Comments Section */
+.comments-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 3rem;
+}
+
+.comments-title {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    color: #2d3748;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.comments-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: #2563eb;
+}
+
+.comment-form-container {
+    margin-bottom: 3rem;
+    background: #f8fafc;
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+.comment-form-container h4 {
+    margin-bottom: 1.5rem;
+    color: #2d3748;
+}
+
+.comment-form .form-control {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.comment-form .form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    outline: none;
+}
+
+.submit-button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-button:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.comment {
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.comment:hover {
+    transform: translateX(10px);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.comment-author {
+    font-weight: bold;
+    color: #2d3748;
+}
+
+.comment-time {
+    color: #a0aec0;
+    font-size: 0.875rem;
+}
+
+.comment-content {
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.no-comments {
+    text-align: center;
+    padding: 2rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    color: #718096;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .article {
+        padding: 2rem;
+        transform: translateY(-50px);
+    }
+    
+    .title {
+        font-size: 2rem;
+    }
+    
+    .post-img img {
+        height: 300px;
+    }
+    
+    .meta-top {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .meta-top ul {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .comments-section {
+        padding: 1.5rem;
+    }
+    
+    .comment-form-container {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .article {
+        padding: 1.5rem;
+        transform: translateY(-30px);
+    }
+    
+    .title {
+        font-size: 1.5rem;
+    }
+    
+    .post-img img {
+        height: 200px;
+    }
+    
+    .submit-button {
+        width: 100%;
+    }
+}

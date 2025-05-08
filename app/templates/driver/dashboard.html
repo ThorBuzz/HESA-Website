@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+
+{% block title %}Driver Dashboard - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/driver.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="driver-header mb-4">
+        <h1>Driver Dashboard</h1>
+        <p>Manage your bus routes and tracking</p>
+    </div>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Welcome, {{ current_user.username }}! You are logged in as a driver.
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Your Assigned Buses</h5>
+                </div>
+                <div class="card-body">
+                    {% if buses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Bus ID</th>
+                                    <th>Route</th>
+                                    <th>Status</th>
+                                    <th>Last Update</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bus in buses %}
+                                <tr>
+                                    <td>{{ bus.bus_id }}</td>
+                                    <td>{{ bus.route }}</td>
+                                    <td>
+                                        <span class="badge {% if bus.status == 'active' %}bg-success{% elif bus.status == 'maintenance' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                            {{ bus.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ bus.last_update.strftime('%H:%M:%S - %d/%m/%Y') }}</td>
+                                    <td>
+                                        {% if bus.status == 'active' %}
+                                        <a href="{{ url_for('driver.stop_tracking', bus_id=bus.id) }}" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-stop-circle"></i> Stop Tracking
+                                        </a>
+                                        {% else %}
+                                        <a href="{{ url_for('driver.start_tracking', bus_id=bus.id) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-play-circle"></i> Start Tracking
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> You don't have any buses assigned to you yet. Please contact the administrator.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5>Instructions for Drivers</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>Click "Start Tracking" when you begin your shift and are ready to drive.</li>
+                        <li>Keep your device (phone/tablet) with you while driving.</li>
+                        <li>Make sure your device's location services are enabled.</li>
+                        <li>The tracking page will automatically update your location while you drive.</li>
+                        <li>Click "Stop Tracking" when you complete your route or end your shift.</li>
+                        <li>If you encounter any issues, please contact technical support.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

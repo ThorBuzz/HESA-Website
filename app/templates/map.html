@@ -1,0 +1,712 @@
+{% extends "layout.html" %}
+
+{% block title %}Campus Shuttle Tracker - HESA KNUST{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize Mapbox
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZ3ltbmNlYyIsImEiOiJjbTd0ZG40NXMwbmU2Mm1xeXlzdDc5bnhpIn0.lHWC6T2ytLJq9O7pEr3ofg';
+    
+    // Initialize variables
+    let busMarkers = {};
+    let userMarker = null;
+    let campusPoints = [];
+    let activeInfoWindow = null;
+    let selectedBusId = null;
+    let filterValue = 'all';
+    
+    // KNUST campus coordinates
+    const KNUST_CENTER = [-1.56927, 6.67233];
+    
+    // Initialize map
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: KNUST_CENTER,
+        zoom: 15,
+        pitch: 30
+    });
+    
+    // Add navigation controls
+    map.addControl(new mapboxgl.NavigationControl());
+    map.addControl(new mapboxgl.FullscreenControl());
+    map.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true
+    }));
+    
+    // Function to create a bus HTML popup content
+    function createPopupContent(bus) {
+        return `
+            <div class="popup-content">
+                <h5>${bus.id}</h5>
+                <p><strong>Route:</strong> ${bus.route}</p>
+                <p><strong>Status:</strong> ${bus.status}</p>
+                <p><strong>Last Update:</strong> ${bus.lastUpdate}</p>
+            </div>
+        `;
+    }
+    
+    // Function to create bus list item HTML
+    function createBusListItem(bus) {
+        const statusClass = bus.status === 'active' ? 'status-active' : 
+                           (bus.status === 'maintenance' ? 'status-maintenance' : 'status-inactive');
+        
+        return `
+            <div class="bus-info" data-bus-id="${bus.id}" id="bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}">
+                <h4>
+                    <i class="fas fa-bus"></i>
+                    ${bus.id}
+                    <span class="bus-status ${statusClass}">${bus.status}</span>
+                </h4>
+                <p class="bus-route">
+                    <i class="fas fa-route route-icon"></i>
+                    ${bus.route}
+                </p>
+                <p class="last-update">
+                    <i class="fas fa-clock"></i>
+                    Last seen: ${bus.lastUpdate}
+                </p>
+                <div class="bus-actions">
+                    <button class="track-button" onclick="centerOnBus('${bus.id}')">
+                        <i class="fas fa-crosshairs"></i> Track Bus
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Function to fetch bus data
+    function fetchBuses() {
+        fetch('{{ url_for("main.get_buses") }}')
+            .then(response => response.json())
+            .then(buses => {
+                // Clear loading message
+                const busList = document.getElementById('bus-list');
+                
+                // If it's the first load, clear the loading placeholder
+                if (busList.querySelector('.spinner')) {
+                    busList.innerHTML = '';
+                }
+                
+                // Filter buses based on current filter
+                const filteredBuses = filterValue === 'all' ? 
+                    buses : 
+                    buses.filter(bus => bus.route.toLowerCase().includes(filterValue));
+                
+                // Check if no buses match filter
+                if (filteredBuses.length === 0) {
+                    busList.innerHTML = '<div class="alert alert-info">No buses match the selected filter.</div>';
+                }
+                
+                // Track buses we've seen to remove ones that no longer exist
+                const currentBusIds = new Set();
+                
+                filteredBuses.forEach(bus => {
+                    currentBusIds.add(bus.id);
+                    
+                    // Format the bus position
+                    const position = bus.position; // [longitude, latitude]
+                    
+                    // Update or create marker
+                    if (busMarkers[bus.id]) {
+                        // Update existing marker
+                        busMarkers[bus.id].marker.setLngLat(position);
+                        
+                        // Update popup content
+                        busMarkers[bus.id].popup.setHTML(createPopupContent(bus));
+                        
+                        // Update animation based on status
+                        const markerElement = busMarkers[bus.id].marker.getElement();
+                        if (bus.status === 'active') {
+                            markerElement.classList.add('animate-bus');
+                        } else {
+                            markerElement.classList.remove('animate-bus');
+                        }
+                    } else {
+                        // Create new marker with appropriate color
+                        const color = bus.status === 'active' ? '#4caf50' : '#9e9e9e';
+                        const marker = new mapboxgl.Marker({
+                            color: color,
+                            rotation: 0
+                        });
+                        
+                        // Create popup
+                        const popup = new mapboxgl.Popup({
+                            closeButton: false,
+                            closeOnClick: true,
+                            offset: 25
+                        }).setHTML(createPopupContent(bus));
+                        
+                        // Add to map
+                        marker.setLngLat(position)
+                             .setPopup(popup)
+                             .addTo(map);
+                        
+                        // Add animation if active
+                        if (bus.status === 'active') {
+                            marker.getElement().classList.add('animate-bus');
+                        }
+                        
+                        // Store marker reference
+                        busMarkers[bus.id] = { marker, popup };
+                        
+                        // Add hover behavior
+                        marker.getElement().addEventListener('mouseenter', () => {
+                            const busItem = document.getElementById(`bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}`);
+                            if (busItem) busItem.style.background = '#e9ecef';
+                        });
+                        
+                        marker.getElement().addEventListener('mouseleave', () => {
+                            const busItem = document.getElementById(`bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}`);
+                            if (busItem) busItem.style.background = '#f8f9fa';
+                        });
+                    }
+                    
+                    // Update or create list item
+                    const busItemId = `bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                    const existingBusItem = document.getElementById(busItemId);
+                    
+                    if (existingBusItem) {
+                        // Just update the status and last update
+                        const statusSpan = existingBusItem.querySelector('.bus-status');
+                        statusSpan.className = `bus-status ${bus.status === 'active' ? 'status-active' : 
+                                            (bus.status === 'maintenance' ? 'status-maintenance' : 'status-inactive')}`;
+                        statusSpan.textContent = bus.status;
+                        
+                        existingBusItem.querySelector('.last-update').innerHTML = 
+                            `<i class="fas fa-clock"></i> Last seen: ${bus.lastUpdate}`;
+                    } else {
+                        // Create new bus item
+                        busList.innerHTML += createBusListItem(bus);
+                    }
+                });
+                
+                // Remove buses that are no longer active
+                Object.keys(busMarkers).forEach(busId => {
+                    if (!currentBusIds.has(busId)) {
+                        // Remove marker from map
+                        busMarkers[busId].marker.remove();
+                        // Remove from our tracking object
+                        delete busMarkers[busId];
+                        // Remove from list
+                        const listItem = document.getElementById(`bus-item-${busId.replace(/[^a-zA-Z0-9]/g, '-')}`);
+                        if (listItem) listItem.remove();
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching bus data:', error);
+                document.getElementById('bus-list').innerHTML = 
+                    '<div class="alert alert-danger">Error loading bus data. Please try again later.</div>';
+            });
+    }
+    
+    // Function to center map on a specific bus
+    window.centerOnBus = function(busId) {
+        if (busMarkers[busId]) {
+            map.flyTo({
+                center: busMarkers[busId].marker.getLngLat(),
+                zoom: 17,
+                speed: 0.8
+            });
+            
+            // Open popup
+            busMarkers[busId].marker.togglePopup();
+            
+            // Highlight in sidebar
+            document.querySelectorAll('.bus-info').forEach(el => {
+                el.style.borderColor = '#0d6efd';
+                el.style.background = '#f8f9fa';
+            });
+            
+            const busItem = document.getElementById(`bus-item-${busId.replace(/[^a-zA-Z0-9]/g, '-')}`);
+            if (busItem) {
+                busItem.style.borderColor = '#2e7d32';
+                busItem.style.background = '#e8f5e9';
+                busItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            selectedBusId = busId;
+        }
+    };
+    
+    // Add KNUST campus POIs (Points of Interest)
+    function addCampusLocations() {
+        const locations = [
+            { name: 'KNUST Main Gate', coordinates: [-1.5767, 6.6936], icon: 'entrance' },
+            { name: 'Great Hall', coordinates: [-1.5695, 6.6741], icon: 'building' },
+            { name: 'College of Health Sciences', coordinates: [-1.5651, 6.6702], icon: 'hospital' },
+            { name: 'College of Engineering', coordinates: [-1.5717, 6.6755], icon: 'school' },
+            { name: 'College of Science', coordinates: [-1.5664, 6.6730], icon: 'microscope' },
+            { name: 'University Library', coordinates: [-1.5700, 6.6719], icon: 'book' },
+            { name: 'Africa Hall', coordinates: [-1.5747, 6.6694], icon: 'home' },
+            { name: 'Independence Hall', coordinates: [-1.5694, 6.6670], icon: 'home' },
+            { name: 'Unity Hall', coordinates: [-1.5715, 6.6659], icon: 'home' },
+            { name: 'Republic Hall', coordinates: [-1.5676, 6.6686], icon: 'home' },
+            { name: 'Queens Hall', coordinates: [-1.5729, 6.6687], icon: 'home' },
+            { name: 'University Sports Stadium', coordinates: [-1.5756, 6.6707], icon: 'stadium' },
+            { name: 'Commercial Area', coordinates: [-1.5689, 6.6771], icon: 'shopping' }
+        ];
+        
+        // Create markers for each location
+        locations.forEach(location => {
+            // Create custom HTML element for marker
+            const el = document.createElement('div');
+            el.className = 'poi-marker';
+            el.style.width = '24px';
+            el.style.height = '24px';
+            el.style.borderRadius = '50%';
+            el.style.background = '#ff9800';
+            el.style.display = 'flex';
+            el.style.justifyContent = 'center';
+            el.style.alignItems = 'center';
+            el.style.color = 'white';
+            el.style.fontSize = '12px';
+            
+            // Add icon based on location type
+            let iconClass = 'fa-map-marker-alt';
+            if (location.icon === 'building') iconClass = 'fa-building';
+            else if (location.icon === 'hospital') iconClass = 'fa-hospital';
+            else if (location.icon === 'school') iconClass = 'fa-graduation-cap';
+            else if (location.icon === 'book') iconClass = 'fa-book';
+            else if (location.icon === 'home') iconClass = 'fa-home';
+            else if (location.icon === 'stadium') iconClass = 'fa-running';
+            else if (location.icon === 'shopping') iconClass = 'fa-shopping-cart';
+            else if (location.icon === 'entrance') iconClass = 'fa-door-open';
+            else if (location.icon === 'microscope') iconClass = 'fa-microscope';
+            
+            el.innerHTML = `<i class="fas ${iconClass}"></i>`;
+            
+            // Create marker
+            const marker = new mapboxgl.Marker({ element: el })
+                .setLngLat(location.coordinates)
+                .setPopup(new mapboxgl.Popup().setHTML(`<b>${location.name}</b>`))
+                .addTo(map);
+            
+            // Store reference
+            campusPoints.push(marker);
+        });
+    }
+    
+    // Initialize user location tracking
+    function initUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(position => {
+                const lngLat = [position.coords.longitude, position.coords.latitude];
+                
+                if (!userMarker) {
+                    // Create user location marker
+                    const el = document.createElement('div');
+                    el.className = 'user-marker';
+                    el.style.width = '20px';
+                    el.style.height = '20px';
+                    el.style.borderRadius = '50%';
+                    el.style.background = '#ff69b4';
+                    el.style.boxShadow = '0 0 0 4px rgba(255, 105, 180, 0.3)';
+                    
+                    userMarker = new mapboxgl.Marker({ element: el })
+                        .setLngLat(lngLat)
+                        .setPopup(new mapboxgl.Popup().setHTML('<b>Your Location</b>'))
+                        .addTo(map);
+                } else {
+                    // Update existing marker
+                    userMarker.setLngLat(lngLat);
+                }
+            }, error => {
+                console.error('Error getting user location:', error);
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
+        }
+    }
+    
+    // Initialize filter functionality
+    function initRouteFilter() {
+        const filterSelect = document.getElementById('route-filter');
+        filterSelect.addEventListener('change', function() {
+            filterValue = this.value;
+            fetchBuses(); // Reload with new filter
+        });
+    }
+    
+    // Simple ad rotation system
+    function setupAds() {
+        const ads = [
+            {
+                title: 'Student Health Insurance',
+                content: 'Special rates for KNUST students. Get covered today!',
+                bgColor: '#e3f2fd'
+            },
+            {
+                title: 'HESA Merchandise',
+                content: 'Show your pride with official KNUST Health Sciences merch!',
+                bgColor: '#f1f8e9'
+            },
+            {
+                title: 'Coming Event: Health Week',
+                content: 'Join us for Health Week activities starting May 15th!',
+                bgColor: '#fff8e1'
+            }
+        ];
+        
+        let currentAdIndex = 0;
+        const adSpace = document.getElementById('ad-space');
+        
+        function displayAd(index) {
+            const ad = ads[index];
+            adSpace.style.background = ad.bgColor;
+            adSpace.innerHTML = `
+                <div class="p-2 text-center">
+                    <h5 class="mb-1">${ad.title}</h5>
+                    <p class="mb-0 small">${ad.content}</p>
+                </div>
+            `;
+        }
+        
+        // Initial ad
+        displayAd(0);
+        
+        // Rotate ads every 20 seconds
+        setInterval(() => {
+            currentAdIndex = (currentAdIndex + 1) % ads.length;
+            displayAd(currentAdIndex);
+        }, 20000);
+    }
+    
+    // Initialize when map loads
+    map.on('load', function() {
+        // Add campus locations
+        addCampusLocations();
+        
+        // Start fetching bus data
+        fetchBuses();
+        
+        // Setup regular data refresh (every 5 seconds)
+        setInterval(fetchBuses, 5000);
+        
+        // Initialize user location tracking
+        initUserLocation();
+        
+        // Initialize filter
+        initRouteFilter();
+        
+        // Setup ad rotation
+        setupAds();
+    });
+</script>
+{% endblock %}
+
+{% block styles %}
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet'>
+<style>
+    #map-container {
+        position: relative;
+        height: calc(100vh - 120px);
+        width: 100%;
+        margin-top: 20px;
+    }
+    
+    #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .map-overlay {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 1;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        max-width: 320px;
+        max-height: calc(100% - 40px);
+        overflow-y: auto;
+    }
+    
+    .map-overlay h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #333;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 10px;
+    }
+    
+    .bus-info {
+        margin-bottom: 15px;
+        padding: 15px;
+        border-radius: 6px;
+        background: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+        transition: all 0.3s ease;
+    }
+    
+    .bus-info:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+    
+    .bus-info h4 {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .bus-info h4 i {
+        margin-right: 8px;
+        color: #0d6efd;
+    }
+    
+    .bus-info p {
+        margin: 5px 0;
+        font-size: 14px;
+    }
+    
+    .bus-status {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+    
+    .status-active {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .status-inactive {
+        background: #f5f5f5;
+        color: #757575;
+    }
+    
+    .status-maintenance {
+        background: #fff8e1;
+        color: #f57f17;
+    }
+    
+    .last-update {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+        font-style: italic;
+    }
+    
+    .bus-route {
+        display: flex;
+        align-items: center;
+    }
+    
+    .route-icon {
+        margin-right: 8px;
+        color: #555;
+    }
+    
+    .bus-actions {
+        margin-top: 10px;
+    }
+    
+    .track-button {
+        background: #0d6efd;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: background 0.2s;
+    }
+    
+    .track-button:hover {
+        background: #0b5ed7;
+    }
+    
+    .map-legend {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        padding: 10px;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    
+    .legend-icon {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    
+    .user-location {
+        background: #ff69b4;
+    }
+    
+    .active-bus {
+        background: #4caf50;
+    }
+    
+    .inactive-bus {
+        background: #9e9e9e;
+    }
+    
+    .poi {
+        background: #ff9800;
+    }
+    
+    .animate-bus {
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+        }
+    }
+    
+    .bus-filter {
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    /* Spinner for loading state */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #0d6efd;
+        border-radius: 50%;
+        animation: spinner 1s linear infinite;
+    }
+    
+    @keyframes spinner {
+        to {transform: rotate(360deg);}
+    }
+    
+    /* Ad space */
+    .ad-container {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 300px;
+        height: 100px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1;
+        overflow: hidden;
+    }
+    
+    .ad-label {
+        position: absolute;
+        top: 2px;
+        right: 5px;
+        font-size: 10px;
+        color: #666;
+    }
+    
+    .ad-content {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">Campus Shuttle Tracker</h1>
+            <p class="text-muted">Track shuttle buses in real-time across KNUST campus</p>
+        </div>
+    </div>
+    
+    <div id="map-container">
+        <div id="map"></div>
+        
+        <div class="map-overlay">
+            <h3>Active Shuttles</h3>
+            
+            <div class="bus-filter">
+                <label for="route-filter" class="form-label">Filter by route:</label>
+                <select class="form-select form-select-sm" id="route-filter">
+                    <option value="all" selected>All Routes</option>
+                    <option value="main-gate">Main Gate Route</option>
+                    <option value="commercial">Commercial Area Route</option>
+                    <option value="science">Science & Engineering Route</option>
+                    <option value="halls">Halls Route</option>
+                </select>
+            </div>
+            
+            <div id="bus-list">
+                <div class="text-center py-3">
+                    <div class="spinner"></div>
+                    <p class="mt-2">Loading buses...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="map-legend">
+            <h6 class="mb-2">Map Legend</h6>
+            <div class="legend-item">
+                <div class="legend-icon user-location"></div>
+                <span>Your Location</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon active-bus"></div>
+                <span>Active Bus</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon inactive-bus"></div>
+                <span>Inactive Bus</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon poi"></div>
+                <span>Campus Location</span>
+            </div>
+        </div>
+        
+        <div class="ad-container">
+            <span class="ad-label">Advertisement</span>
+            <div class="ad-content" id="ad-space">
+                <!-- Ad content will be placed here -->
+                <p class="text-center">Support HESA by advertising here</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

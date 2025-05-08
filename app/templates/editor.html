@@ -1,0 +1,186 @@
+{% extends "layout.html" %}
+
+{% block title %}Editor Dashboard - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="editor-header mb-4">
+        <h1>Editorial Dashboard</h1>
+        <p>Manage website content</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="navigation-menu">
+                <h4>Quick Actions</h4>
+                <div class="action-buttons">
+                    <a href="{{ url_for('editor.new_post') }}" class="action-btn">
+                        <i class="fas fa-plus-circle"></i> New Blog Post
+                    </a>
+                    <a href="{{ url_for('editor.new_potw') }}" class="action-btn">
+                        <i class="fas fa-user-plus"></i> New Personality
+                    </a>
+                    <a href="{{ url_for('editor.new_event') }}" class="action-btn">
+                        <i class="fas fa-calendar-plus"></i> New Event
+                    </a>
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('editor.update_bus') }}" class="action-btn">
+                        <i class="fas fa-bus"></i> Update Bus Location
+                    </a>
+                    <a href="{{ url_for('editor.assign_bus') }}" class="action-btn">
+                        <i class="fas fa-user-tag"></i> Assign Buses to Drivers
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <!-- Content Tabs -->
+            <ul class="nav nav-tabs" id="editorTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab" aria-controls="posts" aria-selected="true">Blog Posts</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="potw-tab" data-bs-toggle="tab" data-bs-target="#potw" type="button" role="tab" aria-controls="potw" aria-selected="false">Personalities</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="false">Events</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="editorTabsContent">
+                <!-- Blog Posts Tab -->
+                <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
+                    <div class="content-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Date</th>
+                                    <th>Author</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="postsTableBody">
+                                {% for post in posts %}
+                                <tr>
+                                    <td>{{ post.title }}</td>
+                                    <td>{{ post.category }}</td>
+                                    <td>{{ post.date_posted.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ post.author.username }}</td>
+                                    <td class="actions">
+                                        <a href="{{ url_for('blog.post', post_id=post.id) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-success">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No blog posts available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Personalities Tab -->
+                <div class="tab-pane fade" id="potw" role="tabpanel" aria-labelledby="potw-tab">
+                    <div class="content-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>School</th>
+                                    <th>Date Added</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="potwTableBody">
+                                {% for personality in personalities %}
+                                <tr>
+                                    <td>{{ personality.name }}</td>
+                                    <td>{{ personality.school }}</td>
+                                    <td>{{ personality.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ 'Active' if personality.is_active else 'Inactive' }}</td>
+                                    <td class="actions">
+                                        <a href="{{ url_for('main.potw') }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-success">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No personalities available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Events Tab -->
+                <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
+                    <div class="content-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Location</th>
+                                    <th>Added On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventsTableBody">
+                                {% for event in events %}
+                                <tr>
+                                    <td>{{ event.title }}</td>
+                                    <td>{{ event.event_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ event.location }}</td>
+                                    <td>{{ event.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td class="actions">
+                                        <a href="#" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-success">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No events available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

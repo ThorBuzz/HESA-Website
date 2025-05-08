@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ post.title }} - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/blog_post.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <img src="{{ url_for('static', filename='uploads/blog_pics/' + post.image_file) }}" alt="{{ post.title }}" class="hero-image">
+    <div class="hero-overlay"></div>
+</section>
+
+<div class="container d-flex flex-column align-items-center">
+    <div class="col-lg-8">
+        <section id="blog-details" class="blog-details section">
+            <div class="container">
+                <article class="article">
+                    <h2 class="title">{{ post.title }}</h2>
+                    
+                    <div class="meta-top">
+                        <ul>
+                            <li class="d-flex align-items-center">
+                                <i class="bi bi-person"></i>
+                                <a href="#">{{ post.author.username }}</a>
+                            </li>
+                            <li class="d-flex align-items-center">
+                                <i class="bi bi-clock"></i>
+                                <a href="#">
+                                    <time datetime="{{ post.date_posted.strftime('%Y-%m-%d') }}">
+                                        {{ post.date_posted.strftime('%b %d, %Y') }}
+                                    </time>
+                                </a>
+                            </li>
+                            <li class="d-flex align-items-center">
+                                <i class="bi bi-chat-dots"></i>
+                                <a href="#comments">{{ comments|length }} Comments</a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="content">
+                        {{ post.content|safe }}
+                    </div>
+                </article>
+                
+                <!-- Comment Section -->
+                <div id="comments" class="comments-section">
+                    <h3 class="comments-title">Comments ({{ comments|length }})</h3>
+                    
+                    <!-- Comment Form -->
+                    <div class="comment-form-container">
+                        <h4>Leave a Comment</h4>
+                        <form method="POST" action="{{ url_for('blog.comment', post_id=post.id) }}" class="comment-form">
+                            {{ form.hidden_tag() }}
+                            <div class="form-group">
+                                {{ form.content(class="form-control", placeholder="Add a comment...", rows=3) }}
+                                {% if form.content.errors %}
+                                    {% for error in form.content.errors %}
+                                        <span class="text-danger">{{ error }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="submit-button">Post Comment</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Comments Display -->
+                    <div class="comments-list">
+                        {% for comment in comments %}
+                        <div class="comment">
+                            <div class="comment-header">
+                                <span class="comment-author">
+                                    {% if comment.user %}
+                                        {{ comment.user.username }}
+                                    {% else %}
+                                        Anonymous
+                                    {% endif %}
+                                </span>
+                                <span class="comment-time">{{ comment.date_posted.strftime('%b %d, %Y at %H:%M') }}</span>
+                            </div>
+                            <p class="comment-content">{{ comment.content }}</p>
+                        </div>
+                        {% else %}
+                        <div class="no-comments">
+                            <p>No comments yet. Be the first to comment!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

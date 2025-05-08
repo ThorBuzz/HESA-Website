@@ -1,0 +1,262 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ personality.name }} - Personality of the Week | HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/potw.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Personality Header Banner -->
+<div class="potw-banner">
+    <div class="container">
+        <div class="potw-banner-content">
+            <div class="potw-label">
+                <span>Personality of the Week</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container potw-container">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="potw-card">
+                <!-- Profile Header -->
+                <div class="potw-profile-header">
+                    <div class="potw-image-wrapper">
+                        <!-- Enlarged image container -->
+                        <div class="potw-image-container" id="imageContainer">
+                            <img src="{{ url_for('static', filename='/potw_pics/' + personality.image_file) }}" 
+                                 alt="{{ personality.name }}" class="potw-image">
+                            <div class="image-overlay">
+                                <i class="fas fa-search-plus"></i>
+                                <span>Click to enlarge</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="potw-profile-info">
+                        <h1 class="potw-name">{{ personality.name }}</h1>
+                        <h2 class="potw-title">{{ personality.title }}</h2>
+                        
+                        <div class="potw-meta">
+                            <div class="potw-meta-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>{{ personality.school }}</span>
+                            </div>
+                            <div class="potw-meta-item">
+                                <i class="fas fa-user-graduate"></i>
+                                <span>{{ personality.year }}</span>
+                            </div>
+                            <div class="potw-meta-item">
+                                <i class="fas fa-school"></i>
+                                <span>{{ personality.high_school }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if personality.quote %}
+                        <div class="potw-quote">
+                            <i class="fas fa-quote-left quote-icon"></i>
+                            <blockquote>{{ personality.quote }}</blockquote>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Biography Section -->
+                <div class="potw-biography">
+                    <h3 class="potw-section-title">Biography</h3>
+                    <div class="potw-content">
+                        {{ personality.bio|safe }}
+                    </div>
+                </div>
+                
+                <!-- Education Section -->
+                <div class="potw-education">
+                    <h3 class="potw-section-title">Educational Background</h3>
+                    <div class="potw-content">
+                        <div class="education-item">
+                            <div class="education-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="education-details">
+                                <h4>{{ personality.school }}</h4>
+                                <p>KNUST - {{ personality.year }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="education-item">
+                            <div class="education-icon">
+                                <i class="fas fa-school"></i>
+                            </div>
+                            <div class="education-details">
+                                <h4>{{ personality.high_school }}</h4>
+                                <p>High School Education</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Social Share -->
+                <div class="potw-social-share">
+                    <h3 class="potw-section-title">Share Profile</h3>
+                    <div class="social-buttons">
+                        <a href="#" class="social-button facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-button twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-button whatsapp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="#" class="social-button linkedin">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Comments Section -->
+                <div class="potw-comments" id="comments">
+                    <h3 class="potw-section-title">
+                        Comments 
+                        <span class="comment-count">{{ comments|length }}</span>
+                    </h3>
+                    
+                    <div class="comment-form-wrapper">
+                        <h4>Leave a Comment</h4>
+                        <form class="potw-comment-form" method="POST" action="{{ url_for('main.potw_comment') }}">
+                            {{ form.hidden_tag() }}
+                            <div class="form-group">
+                                {{ form.author_name(class="form-control", placeholder="Your name") }}
+                                {% if form.author_name.errors %}
+                                    {% for error in form.author_name.errors %}
+                                        <span class="text-danger">{{ error }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                {{ form.content(class="form-control", placeholder="Add a comment...", rows="4") }}
+                                {% if form.content.errors %}
+                                    {% for error in form.content.errors %}
+                                        <span class="text-danger">{{ error }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="potw-submit-btn">
+                                <i class="fas fa-paper-plane"></i> Post Comment
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="comments-list">
+                        {% for comment in comments %}
+                        <div class="comment-item">
+                            <div class="comment-avatar">
+                                <div class="avatar-placeholder">
+                                    {{ comment.author_name[:1]|upper }}
+                                </div>
+                            </div>
+                            <div class="comment-body">
+                                <div class="comment-header">
+                                    <span class="comment-author">{{ comment.author_name }}</span>
+                                    <span class="comment-date">{{ comment.date_posted.strftime('%b %d, %Y at %H:%M') }}</span>
+                                </div>
+                                <div class="comment-text">
+                                    {{ comment.content }}
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="no-comments">
+                            <div class="no-comments-icon">
+                                <i class="far fa-comment-dots"></i>
+                            </div>
+                            <p>No comments yet. Be the first to share your thoughts!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Lightbox Modal -->
+<div id="imageModal" class="image-modal">
+    <span class="close-modal">&times;</span>
+    <div class="modal-content">
+        <img id="modalImage" src="" alt="Enlarged Image">
+        <div class="modal-caption">{{ personality.name }}</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Animate elements on page load
+        const elementsToAnimate = document.querySelectorAll('.potw-card, .potw-profile-header, .potw-biography, .potw-education, .potw-social-share, .potw-comments');
+        
+        elementsToAnimate.forEach((el, index) => {
+            setTimeout(() => {
+                el.classList.add('animated');
+            }, 100 * index);
+        });
+        
+        // Smooth scroll to comments when clicking on comment links
+        document.querySelectorAll('a[href="#comments"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Image Lightbox functionality
+        const imageContainer = document.getElementById('imageContainer');
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const closeModal = document.querySelector('.close-modal');
+        
+        if (imageContainer && imageModal && modalImage) {
+            // Set up the modal image source
+            const profileImage = imageContainer.querySelector('.potw-image');
+            modalImage.src = profileImage.src;
+            
+            // Open modal when clicking the image
+            imageContainer.addEventListener('click', () => {
+                imageModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+                
+                // Add animation class to modal content
+                setTimeout(() => {
+                    document.querySelector('.modal-content').classList.add('show');
+                }, 50);
+            });
+            
+            // Close modal when clicking the close button
+            closeModal.addEventListener('click', () => {
+                document.querySelector('.modal-content').classList.remove('show');
+                setTimeout(() => {
+                    imageModal.style.display = 'none';
+                    document.body.style.overflow = 'auto'; // Re-enable scrolling
+                }, 300);
+            });
+            
+            // Close modal when clicking outside the image
+            imageModal.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    document.querySelector('.modal-content').classList.remove('show');
+                    setTimeout(() => {
+                        imageModal.style.display = 'none';
+                        document.body.style.overflow = 'auto'; // Re-enable scrolling
+                    }, 300);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

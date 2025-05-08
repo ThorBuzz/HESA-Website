@@ -1,0 +1,337 @@
+{% extends "layout.html" %}
+
+{% block title %}Home - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Carousel Section -->
+<section class="carousel">
+    <div class="carousel-track">
+        <!-- Event Carousel Items - Dynamic from database -->
+        {% for event in events %}
+        <div class="carousel-slide {% if loop.first %}active{% endif %}">
+            {% if event.image_file %}
+            <img
+                src="{{ url_for('static', filename='uploads/event_pics/' + event.image_file) }}"
+                alt="{{ event.title }}" class="carousel-image">
+            {% else %}
+            <img src="{{ url_for('static', filename='img/default_event.jpg') }}"
+                alt="{{ event.title }}" class="carousel-image">
+            {% endif %}
+            <div class="carousel-content">
+                <h2 class="carousel-title">{{ event.title }}</h2>
+                <p class="carousel-description">{{
+                    event.description|truncate(120) }}</p>
+                <a href="#" class="carousel-button">Learn More</a>
+            </div>
+        </div>
+        {% else %}
+        <!-- Default items if no events -->
+        <div class="carousel-slide active">
+            <img
+                src="{{ url_for('static', filename='img/default_carousel1.jpg') }}"
+                alt="Health Talk Event" class="carousel-image">
+            <div class="carousel-content">
+                <h2 class="carousel-title">Healthcare Symposium 2025</h2>
+                <p class="carousel-description">Join us for an insightful
+                    session with leading medical professionals.</p>
+                <a href="#" class="carousel-button">Register Now</a>
+            </div>
+        </div>
+        <div class="carousel-slide">
+            <img
+                src="{{ url_for('static', filename='img/default_carousel2.jpg') }}"
+                alt="Student Elections" class="carousel-image">
+            <div class="carousel-content">
+                <h2 class="carousel-title">Campus Elections 2025</h2>
+                <p class="carousel-description">Shape the future of our campus.
+                    Vote for your representatives.</p>
+                <a href="#" class="carousel-button">Learn More</a>
+            </div>
+        </div>
+        <div class="carousel-slide">
+            <img
+                src="{{ url_for('static', filename='img/default_carousel3.jpg') }}"
+                alt="Sports Tournament" class="carousel-image">
+            <div class="carousel-content">
+                <h2 class="carousel-title">Inter-Faculty Sports Week</h2>
+                <p class="carousel-description">Experience the thrill of
+                    competition at our annual sports championship.</p>
+                <a href="#" class="carousel-button">View Schedule</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <button class="carousel-control carousel-prev">
+        <i class="arrow arrow-left"></i>
+    </button>
+    <button class="carousel-control carousel-next">
+        <i class="arrow arrow-right"></i>
+    </button>
+    <div class="carousel-indicators"></div>
+</section>
+
+<!-- Health Awareness Section -->
+<section class="awareness-section" id="awareness">
+    <h2 class="section-title">Health Awareness Programs</h2>
+    <div class="awareness-grid">
+        <div class="awareness-card">
+            <div class="awareness-image">
+                <img
+                    src="{{ url_for('static', filename='img/awareness1.jpg') }}"
+                    alt="Health Program 1">
+            </div>
+            <div class="awareness-content">
+                <h3>Mental Health Awareness</h3>
+                <p>Comprehensive health awareness and prevention strategies for
+                    university students.</p>
+            </div>
+        </div>
+
+        <div class="awareness-card">
+            <div class="awareness-image">
+                <img
+                    src="{{ url_for('static', filename='img/awareness2.jpg') }}"
+                    alt="Health Program 2">
+            </div>
+            <div class="awareness-content">
+                <h3>Preventive Healthcare</h3>
+                <p>Advanced healthcare initiatives and community support for
+                    preventive care.</p>
+            </div>
+        </div>
+
+        <div class="awareness-card">
+            <div class="awareness-image">
+                <img
+                    src="{{ url_for('static', filename='img/awareness3.jpg') }}"
+                    alt="Health Program 3">
+            </div>
+            <div class="awareness-content">
+                <h3>Nutrition & Wellness</h3>
+                <p>Innovative approaches to healthcare and wellness through
+                    proper nutrition.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Blog Posts Section -->
+<section class="blog-section" id="blog">
+    <h2 class="section-title">Latest Updates</h2>
+    <div class="blog-grid">
+        {% for post in posts %}
+        <article class="blog-card">
+            <div class="card-image-container">
+                <img
+                    src="{{ url_for('static', filename='/blog_pics/' + post.image_file) }}"
+                    alt="{{ post.title }}" class="card-image">
+            </div>
+            <div class="card-content">
+                <h2 class="card-title">{{ post.title }}</h2>
+                <p class="card-excerpt">{{ post.excerpt }}</p>
+                <div class="card-meta">
+                    <span class="meta-item">
+                        <i class="far fa-calendar"></i>
+                        {{ post.date_posted.strftime('%b %d, %Y') }}
+                    </span>
+                    <span class="meta-item">
+                        <i class="far fa-clock"></i>
+                        {{ post.read_time }} min read
+                    </span>
+                </div>
+                <a href="{{ url_for('blog.post', post_id=post.id) }}"
+                    class="read-more">Read More</a>
+            </div>
+        </article>
+        {% else %}
+        <div class="no-posts">
+            <p>No posts available at the moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Entertainment Section -->
+<section class="entertainment-section" id="entertainment">
+    <h2 class="section-title">Entertainment Updates</h2>
+    <div class="entertainment-grid">
+        <div class="entertainment-card">
+            <h3>Cultural Night</h3>
+            <p>Experience amazing entertainment and cultural activities
+                showcasing student talents.</p>
+        </div>
+
+        <div class="entertainment-card">
+            <h3>Music Festival</h3>
+            <p>Join us for exciting performances and shows featuring local
+                artists.</p>
+        </div>
+
+        <div class="entertainment-card">
+            <h3>Movie Screenings</h3>
+            <p>Weekly film screenings at the student center - free popcorn for
+                all attendees!</p>
+        </div>
+    </div>
+</section>
+
+<!-- Login Role Selection -->
+<div class="login-container">
+    <div class="role-cards">
+        <a href="{{ url_for('auth.login') }}?role=admin" class="role-card">
+            <div class="icon admin-icon">👨‍💼</div>
+            <h2>Admin</h2>
+            <p>Access dashboard and manage system settings</p>
+        </a>
+        <a href="{{ url_for('auth.login') }}?role=student" class="role-card">
+            <div class="icon student-icon">👨‍🎓</div>
+            <h2>Student</h2>
+            <p>Access your courses and learning materials</p>
+        </a>
+    </div>
+</div>
+
+<!-- Personality of the Week Section -->
+<section class="split-section-potw">
+    <div class="split-container">
+        <!-- Image Side -->
+        <div class="image-side fade-in">
+            {% if potw and potw.image_file %}
+            <img
+                src="{{ url_for('static', filename='/potw_pics/' + potw.image_file) }}"
+                alt="{{ potw.name }}">
+            {% else %}
+            <img src="{{ url_for('static', filename='img/default_potw.jpg') }}"
+                alt="Personality of the Week">
+            {% endif %}
+        </div>
+
+        <!-- Content Side -->
+        <div class="content-side fade-in">
+            <h2>Personality of the Week</h2>
+            {% if potw %}
+            <p>Delve into the life of this week's amazing individual</p>
+
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">★</div>
+                    <div>
+                        <h3>{{ potw.school }}</h3>
+                        <p>{{ potw.year }}</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div>
+                        <h3>{{ potw.high_school }}</h3>
+                        <p>Accra, Ghana</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">♥</div>
+                    <div>
+                        <h3>{{ potw.quote }}</h3>
+                        <p>Personal Motto</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p>No personality featured this week. Check back later!</p>
+            {% endif %}
+
+            <a href="{{ url_for('main.potw') }}" class="cta-button">Read
+                More</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Carousel Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        const prevButton = document.querySelector('.carousel-prev');
+        const nextButton = document.querySelector('.carousel-next');
+        const indicators = document.querySelector('.carousel-indicators');
+        let currentSlide = 0;
+
+        // Create indicators
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.classList.add('indicator');
+            if (index === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goToSlide(index));
+            indicators.appendChild(dot);
+        });
+
+        function updateSlide() {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide].classList.add('active');
+            
+            // Update indicators
+            const dots = document.querySelectorAll('.indicator');
+            dots.forEach(dot => dot.classList.remove('active'));
+            dots[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            updateSlide();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            updateSlide();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlide();
+        }
+
+        if (prevButton && nextButton) {
+            prevButton.addEventListener('click', prevSlide);
+            nextButton.addEventListener('click', nextSlide);
+        }
+
+        // Auto advance slides every 5 seconds if there are slides
+        if (slides.length > 0) {
+            setInterval(nextSlide, 5000);
+        }
+    });
+
+    // Scroll progress bar
+    function updateProgressBar() {
+        const scrollProgress = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar) {
+            progressBar.style.width = scrollProgress + '%';
+        }
+    }
+
+    // Intersection Observer for animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    // Observe all cards
+    document.querySelectorAll('.awareness-card, .entertainment-card').forEach(card => {
+        observer.observe(card);
+    });
+
+    // Update progress bar on scroll
+    window.addEventListener('scroll', updateProgressBar);
+</script>
+{% endblock %}
