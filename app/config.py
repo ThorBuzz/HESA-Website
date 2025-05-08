@@ -6,7 +6,21 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'knust-hesa-default-secret-key'
     
     # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///site.db'
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///site.db'
+    
+    # Local offline testing.
+    # SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'site.db')}"
+
+    # Local but affect postgres.
+    # SQLALCHEMY_DATABASE_URI = 'postgresql://fallingstarcampusmarket_owner:4LQ6xdtFAlNS@ep-morning-star-a8n2df7n.eastus2.azure.neon.tech/fallingstarcampusmarket?sslmode=require'
+
+    # external render
+    # SQLALCHEMY_DATABASE_URI = 'postgresql://hesa_website_database_user:VKp5X370nKMVPIQMiLhaagCH3JA3KPDY@dpg-d0ehvu95pdvs73anp8hg-a.oregon-postgres.render.com/hesa_website_database'
+
+    # internal render
+    SQLALCHEMY_DATABASE_URI = 'postgresql://hesa_website_database_user:VKp5X370nKMVPIQMiLhaagCH3JA3KPDY@dpg-d0ehvu95pdvs73anp8hg-a/hesa_website_database'
+
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Upload folder for images

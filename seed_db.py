@@ -18,6 +18,18 @@ def seed_users():
                 'role': 'admin'
             },
             {
+                'username': 'ThorLazerman',
+                'email': 'Pwavrahenry06@gmail.com',
+                'password': 'bigbadbucky',
+                'role': 'admin'
+            },
+            {
+                'username': 'Godwin',
+                'email': 'mawulikplimgodwin@gmail.com',
+                'password': 'gymn748512693hesa',
+                'role': 'admin'
+            },
+            {
                 'username': 'editor',
                 'email': 'editor@example.com',
                 'password': 'editorpassword',

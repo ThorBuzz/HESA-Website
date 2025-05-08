@@ -13,7 +13,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
     # Update role options to include 'driver'
     role = db.Column(db.String(20), default='student')  # Options: student, admin, editor, driver
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
