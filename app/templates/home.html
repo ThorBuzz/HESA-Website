@@ -964,7 +964,7 @@
           </div>
         </div>
         
-        <a href="#" class="hero-cta">Start</a>
+        <a href="{{ url_for('main.map') }}" class="hero-cta">Start</a>
       </div>
       
       <div class="bus-tracker-right">
@@ -1018,7 +1018,7 @@
   <div class="container">
     <div class="section-heading">
       <h2 class="section-title">Entertainment Hub</h2>
-      <p class="section-subtitle">Discover exciting events and activities for students</p>
+      <!-- <p class="section-subtitle">Discover exciting events and activities for students</p> -->
     </div>
     
     <div class="entertainment-grid">
@@ -1053,6 +1053,7 @@
 <section class="potw-section">
   <div class="container">
     <div class="potw-container">
+    <h1>Personality of the Week</h1>
       <!-- Image Side -->
       <div class="potw-image">
         {% if potw %}
@@ -1064,9 +1065,8 @@
       
       <!-- Content Side -->
       <div class="potw-content">
-        <h2>Personality of the Week</h2>
         {% if potw %}
-        <p>Meet our outstanding student who exemplifies academic excellence and community leadership</p>
+        <!-- <p>Meet our outstanding student who exemplifies academic excellence and community leadership</p> -->
         
         <div class="feature-list">
           <div class="feature-item">
@@ -1110,7 +1110,8 @@
 </section>
 
 <!-- Login Section (Redesigned) -->
-<section class="login-section">
+<!-- <section class="login-section">
+    
   <div class="container">
     <div class="section-heading">
       <h2 class="section-title">Member Access</h2>
@@ -1139,7 +1140,9 @@
       </div>
     </div>
   </div>
-</section>
+</section> -->
+<!-- <span class="role-button">Sign In</span> -->
+
 {% endblock %}
 
 {% block scripts %}
@@ -1247,15 +1250,10 @@
     window.addEventListener('scroll', updateHeader);
     
     // Mobile menu functionality
-    const menuBtn = document.querySelector('.mobile-menu-btn');
-    const navMenu = document.querySelector('.nav');
+    //const menuBtn = document.querySelector('.mobile-menu-btn');
+    //const navMenu = document.querySelector('.nav');
     
-    if (menuBtn && navMenu) {
-      menuBtn.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-        menuBtn.classList.toggle('active');
-      });
-    }
+
   });
 </script>
 {% endblock %}
