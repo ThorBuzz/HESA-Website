@@ -1,0 +1,140 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Event - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+<!-- Include summernote CSS -->
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2>{{ title }}</h2>
+                    <p>Update an existing event</p>
+                </div>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {% if form.title.errors %}
+                            {{ form.title(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.title.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.title(class="form-control") }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.event_date.label(class="form-label") }}
+                        {% if form.event_date.errors %}
+                            {{ form.event_date(class="form-control is-invalid", type="date") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.event_date.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.event_date(class="form-control", type="date") }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.location.label(class="form-label") }}
+                        {% if form.location.errors %}
+                            {{ form.location(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.location.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.location(class="form-control") }}
+                        {% endif %}
+                        <small class="text-muted">E.g., "Great Hall", "Faculty of Allied Health Sciences"</small>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {% if form.description.errors %}
+                            {{ form.description(class="form-control summernote is-invalid", rows=10) }}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.description(class="form-control summernote", rows=10) }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.image.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form.image(class="form-control") }}
+                        </div>
+                        {% if form.image.errors %}
+                            <div class="text-danger">
+                                {% for error in form.image.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Upload a new event image (optional)</small>
+                        
+                        <!-- Current image preview -->
+                        {% if event.image_file %}
+                        <div class="mt-2">
+                            <p>Current image:</p>
+                            {% from "macros/image_helper.html" import render_image %}
+                            {{ render_image(event.image_file, 'event_pics/', 'img/default_event.jpg', event.title, 'img-thumbnail mb-2') }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{{ url_for('editor.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Include summernote JS -->
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('.summernote').summernote({
+            height: 300,
+            minHeight: 200,
+            maxHeight: 500,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'hr']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
+    });
+</script>
+{% endblock %}

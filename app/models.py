@@ -52,7 +52,7 @@ class BlogPost(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    image_file = db.Column(db.String(20), nullable=True, default='default_blog.jpg')
+    image_file = db.Column(db.String(256), nullable=True, default='default_blog.jpg')
     category = db.Column(db.String(20), nullable=False)
     excerpt = db.Column(db.String(200))
     read_time = db.Column(db.Integer, default=5)  # estimated reading time in minutes
@@ -86,7 +86,7 @@ class PersonalityOfTheWeek(db.Model):
     name = db.Column(db.String(100), nullable=False)
     title = db.Column(db.String(200), nullable=False)
     bio = db.Column(db.Text, nullable=False)
-    image_file = db.Column(db.String(20), nullable=False, default='default_potw.jpg')
+    image_file = db.Column(db.String(256), nullable=False, default='default_potw.jpg')
     school = db.Column(db.String(100))
     year = db.Column(db.String(20))
     high_school = db.Column(db.String(100))
@@ -116,10 +116,24 @@ class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    image_file = db.Column(db.String(20), nullable=True)
+    image_file = db.Column(db.String(256), nullable=True)
     event_date = db.Column(db.DateTime, nullable=False)
     location = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def __repr__(self):
         return f"Event('{self.title}', '{self.event_date}')"
+
+
+class HomeBanner(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    image_file = db.Column(db.String(256), nullable=False)
+    order = db.Column(db.Integer, default=0)  # For ordering the banners
+    is_active = db.Column(db.Boolean, default=True)  # To enable/disable banners
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"HomeBanner('{self.title}', order={self.order}, active={self.is_active})"

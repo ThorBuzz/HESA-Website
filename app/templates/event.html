@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ event.title }} - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/event.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="event-card">
+                <div class="event-header">
+                    <h1 class="event-title">{{ event.title }}</h1>
+                    <div class="event-meta">
+                        <span class="event-date">
+                            <i class="far fa-calendar-alt"></i> 
+                            {{ event.event_date.strftime('%b %d, %Y') }}
+                        </span>
+                        <span class="event-location">
+                            <i class="fas fa-map-marker-alt"></i> 
+                            {{ event.location }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="event-image-container">
+                    {% from "macros/image_helper.html" import render_image %}
+                    {{ render_image(event.image_file, 'event_pics/', 'img/default_event.jpg', event.title, 'event-image') }}
+                </div>
+                
+                <div class="event-content">
+                    {{ event.description|safe }}
+                </div>
+                
+                <div class="event-footer">
+                    {% if event.event_date > now %}
+                        <div class="countdown-container">
+                            <p>Time until event:</p>
+                            <div class="countdown" data-date="{{ event.event_date.strftime('%Y-%m-%d') }}">
+                                <div class="countdown-item">
+                                    <span class="countdown-value days">0</span>
+                                    <span class="countdown-label">Days</span>
+                                </div>
+                                <div class="countdown-item">
+                                    <span class="countdown-value hours">0</span>
+                                    <span class="countdown-label">Hours</span>
+                                </div>
+                                <div class="countdown-item">
+                                    <span class="countdown-value minutes">0</span>
+                                    <span class="countdown-label">Minutes</span>
+                                </div>
+                                <div class="countdown-item">
+                                    <span class="countdown-value seconds">0</span>
+                                    <span class="countdown-label">Seconds</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" class="btn btn-primary register-btn">Register for Event</a>
+                    {% else %}
+                        <div class="event-past">
+                            <p><i class="fas fa-clock"></i> This event has already taken place.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="event-actions mt-4">
+                <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+                {% if current_user.is_authenticated and current_user.role in ['admin', 'editor'] %}
+                <a href="{{ url_for('editor.edit_event', event_id=event.id) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit"></i> Edit Event
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Countdown timer
+        const countdownElements = document.querySelectorAll('.countdown');
+        
+        countdownElements.forEach(function(countdown) {
+            const eventDate = new Date(countdown.getAttribute('data-date')).getTime();
+            
+            const updateCountdown = function() {
+                const now = new Date().getTime();
+                const distance = eventDate - now;
+                
+                if (distance < 0) {
+                    // If the event has passed
+                    countdown.innerHTML = '<p>This event has already taken place.</p>';
+                    return;
+                }
+                
+                // Time calculations
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                // Update HTML elements
+                countdown.querySelector('.days').textContent = days;
+                countdown.querySelector('.hours').textContent = hours;
+                countdown.querySelector('.minutes').textContent = minutes;
+                countdown.querySelector('.seconds').textContent = seconds;
+            };
+            
+            // Initialize and update every second
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, SelectField, DateField
+from wtforms import HiddenField, StringField, PasswordField, SubmitField, BooleanField, TextAreaField, SelectField, DateField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from app.models import User
 
@@ -35,7 +35,9 @@ class BlogPostForm(FlaskForm):
         ('news', 'News'), 
         ('tutorial', 'Tutorial'), 
         ('review', 'Review'),
-        ('event', 'Event')
+        ('event', 'Event'),
+        ('health', 'Health Awareness')
+        
     ], validators=[DataRequired()])
     image = FileField('Featured Image', validators=[FileAllowed(['jpg', 'png', 'jpeg'])])
     read_time = StringField('Estimated Read Time (minutes)', validators=[DataRequired()])
@@ -82,3 +84,11 @@ class AssignBusForm(FlaskForm):
     route = StringField('Route', validators=[DataRequired(), Length(max=100)])
     driver = SelectField('Driver', validators=[DataRequired()], coerce=int)
     submit = SubmitField('Assign Bus')
+    
+
+class HomeBannerForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    image = FileField('Banner Image', validators=[FileAllowed(['jpg', 'png', 'jpeg'])])
+    is_active = BooleanField('Active', default=True)
+    order = HiddenField('Order')

@@ -1,23 +1,24 @@
 {% extends "layout.html" %}
 
-{% block title %}Campus Shuttle Tracker - HESA KNUST{% endblock %}
+{% block title %}Bus Tracker - HESA KNUST{% endblock %}
 
 {% block scripts %}
 <script>
     // Initialize Mapbox
     mapboxgl.accessToken = 'pk.eyJ1IjoiZ3ltbmNlYyIsImEiOiJjbTd0ZG40NXMwbmU2Mm1xeXlzdDc5bnhpIn0.lHWC6T2ytLJq9O7pEr3ofg';
-    
+
     // Initialize variables
     let busMarkers = {};
     let userMarker = null;
     let campusPoints = [];
     let activeInfoWindow = null;
     let selectedBusId = null;
-    let filterValue = 'all';
-    
+    let filterValue = 'all';    
+    let sidebarCollapsed = false;
+
     // KNUST campus coordinates
     const KNUST_CENTER = [-1.56927, 6.67233];
-    
+
     // Initialize map
     const map = new mapboxgl.Map({
         container: 'map',
@@ -26,7 +27,7 @@
         zoom: 15,
         pitch: 30
     });
-    
+
     // Add navigation controls
     map.addControl(new mapboxgl.NavigationControl());
     map.addControl(new mapboxgl.FullscreenControl());
@@ -34,7 +35,7 @@
         positionOptions: { enableHighAccuracy: true },
         trackUserLocation: true
     }));
-    
+
     // Function to create a bus HTML popup content
     function createPopupContent(bus) {
         return `
@@ -46,12 +47,12 @@
             </div>
         `;
     }
-    
+
     // Function to create bus list item HTML
     function createBusListItem(bus) {
         const statusClass = bus.status === 'active' ? 'status-active' : 
                            (bus.status === 'maintenance' ? 'status-maintenance' : 'status-inactive');
-        
+
         return `
             <div class="bus-info" data-bus-id="${bus.id}" id="bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}">
                 <h4>
@@ -75,7 +76,33 @@
             </div>
         `;
     }
-    
+
+    // Function to toggle sidebar
+    window.toggleSidebar = function() {
+        const sidebar = document.getElementById('sidebar-content');
+        const mapOverlay = document.querySelector('.map-overlay');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        
+        sidebarCollapsed = !sidebarCollapsed;
+        
+        if (sidebarCollapsed) {
+            sidebar.style.display = 'none';
+            mapOverlay.classList.add('collapsed');
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            toggleBtn.setAttribute('title', 'Expand sidebar');
+        } else {
+            sidebar.style.display = 'block';
+            mapOverlay.classList.remove('collapsed');
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            toggleBtn.setAttribute('title', 'Collapse sidebar');
+        }
+        
+        // Trigger a resize event to ensure map renders correctly
+        window.setTimeout(function() {
+            window.dispatchEvent(new Event('resize'));
+        }, 300);
+    };
+
     // Function to fetch bus data
     function fetchBuses() {
         fetch('{{ url_for("main.get_buses") }}')
@@ -83,39 +110,39 @@
             .then(buses => {
                 // Clear loading message
                 const busList = document.getElementById('bus-list');
-                
+
                 // If it's the first load, clear the loading placeholder
                 if (busList.querySelector('.spinner')) {
                     busList.innerHTML = '';
                 }
-                
+
                 // Filter buses based on current filter
                 const filteredBuses = filterValue === 'all' ? 
                     buses : 
                     buses.filter(bus => bus.route.toLowerCase().includes(filterValue));
-                
+
                 // Check if no buses match filter
                 if (filteredBuses.length === 0) {
                     busList.innerHTML = '<div class="alert alert-info">No buses match the selected filter.</div>';
                 }
-                
+
                 // Track buses we've seen to remove ones that no longer exist
                 const currentBusIds = new Set();
-                
+
                 filteredBuses.forEach(bus => {
                     currentBusIds.add(bus.id);
-                    
+
                     // Format the bus position
                     const position = bus.position; // [longitude, latitude]
-                    
+
                     // Update or create marker
                     if (busMarkers[bus.id]) {
                         // Update existing marker
                         busMarkers[bus.id].marker.setLngLat(position);
-                        
+
                         // Update popup content
                         busMarkers[bus.id].popup.setHTML(createPopupContent(bus));
-                        
+
                         // Update animation based on status
                         const markerElement = busMarkers[bus.id].marker.getElement();
                         if (bus.status === 'active') {
@@ -124,64 +151,76 @@
                             markerElement.classList.remove('animate-bus');
                         }
                     } else {
-                        // Create new marker with appropriate color
-                        const color = bus.status === 'active' ? '#4caf50' : '#9e9e9e';
-                        const marker = new mapboxgl.Marker({
-                            color: color,
-                            rotation: 0
-                        });
+                        // Create custom HTML element for bus marker
+                        const el = document.createElement('div');
+                        el.className = 'bus-marker';
                         
+                        // Set marker color based on status
+                        const markerColor = bus.status === 'active' ? '#4caf50' : '#9e9e9e';
+                        
+                        // Add bus icon HTML
+                        el.innerHTML = `<div class="bus-icon" style="color: ${markerColor};">
+                            <i class="fas fa-bus"></i>
+                            <div class="bus-number">${bus.id.split(' ').pop()}</div>
+                        </div>`;
+
                         // Create popup
                         const popup = new mapboxgl.Popup({
                             closeButton: false,
                             closeOnClick: true,
                             offset: 25
                         }).setHTML(createPopupContent(bus));
-                        
+
+                        // Create marker with custom element
+                        const marker = new mapboxgl.Marker({
+                            element: el,
+                            rotation: 0
+                        });
+
                         // Add to map
                         marker.setLngLat(position)
                              .setPopup(popup)
                              .addTo(map);
-                        
+
                         // Add animation if active
                         if (bus.status === 'active') {
-                            marker.getElement().classList.add('animate-bus');
+                            el.classList.add('animate-bus');
                         }
-                        
+
                         // Store marker reference
                         busMarkers[bus.id] = { marker, popup };
-                        
+
                         // Add hover behavior
-                        marker.getElement().addEventListener('mouseenter', () => {
+                        el.addEventListener('mouseenter', () => {
                             const busItem = document.getElementById(`bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}`);
                             if (busItem) busItem.style.background = '#e9ecef';
                         });
-                        
-                        marker.getElement().addEventListener('mouseleave', () => {
+
+                        el.addEventListener('mouseleave', () => {
                             const busItem = document.getElementById(`bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}`);
                             if (busItem) busItem.style.background = '#f8f9fa';
                         });
                     }
-                    
+
                     // Update or create list item
                     const busItemId = `bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
                     const existingBusItem = document.getElementById(busItemId);
-                    
+
                     if (existingBusItem) {
                         // Just update the status and last update
                         const statusSpan = existingBusItem.querySelector('.bus-status');
                         statusSpan.className = `bus-status ${bus.status === 'active' ? 'status-active' : 
                                             (bus.status === 'maintenance' ? 'status-maintenance' : 'status-inactive')}`;
                         statusSpan.textContent = bus.status;
-                        
-                        existingBusItem.querySelector('.last-update').innerHTML = 
-                            `<i class="fas fa-clock"></i> Last seen: ${bus.lastUpdate}`;
+
+                        existingBusItem.querySelector('.last-update').innerHTML = `
+                            <i class="fas fa-clock"></i> Last seen: ${bus.lastUpdate}`;
                     } else {
                         // Create new bus item
                         busList.innerHTML += createBusListItem(bus);
                     }
                 });
-                
+
                 // Remove buses that are no longer active
                 Object.keys(busMarkers).forEach(busId => {
                     if (!currentBusIds.has(busId)) {
@@ -201,7 +240,7 @@
                     '<div class="alert alert-danger">Error loading bus data. Please try again later.</div>';
             });
     }
-    
+
     // Function to center map on a specific bus
     window.centerOnBus = function(busId) {
         if (busMarkers[busId]) {
@@ -210,27 +249,32 @@
                 zoom: 17,
                 speed: 0.8
             });
-            
+
             // Open popup
             busMarkers[busId].marker.togglePopup();
-            
+
             // Highlight in sidebar
             document.querySelectorAll('.bus-info').forEach(el => {
                 el.style.borderColor = '#0d6efd';
                 el.style.background = '#f8f9fa';
             });
-            
+
             const busItem = document.getElementById(`bus-item-${busId.replace(/[^a-zA-Z0-9]/g, '-')}`);
             if (busItem) {
                 busItem.style.borderColor = '#2e7d32';
                 busItem.style.background = '#e8f5e9';
                 busItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-            
+
             selectedBusId = busId;
+            
+            // If sidebar is collapsed, expand it
+            if (sidebarCollapsed) {
+                toggleSidebar();
+            }
         }
     };
-    
+
     // Add KNUST campus POIs (Points of Interest)
     function addCampusLocations() {
         const locations = [
@@ -248,7 +292,7 @@
             { name: 'University Sports Stadium', coordinates: [-1.5756, 6.6707], icon: 'stadium' },
             { name: 'Commercial Area', coordinates: [-1.5689, 6.6771], icon: 'shopping' }
         ];
-        
+
         // Create markers for each location
         locations.forEach(location => {
             // Create custom HTML element for marker
@@ -263,7 +307,7 @@
             el.style.alignItems = 'center';
             el.style.color = 'white';
             el.style.fontSize = '12px';
-            
+
             // Add icon based on location type
             let iconClass = 'fa-map-marker-alt';
             if (location.icon === 'building') iconClass = 'fa-building';
@@ -275,26 +319,26 @@
             else if (location.icon === 'shopping') iconClass = 'fa-shopping-cart';
             else if (location.icon === 'entrance') iconClass = 'fa-door-open';
             else if (location.icon === 'microscope') iconClass = 'fa-microscope';
-            
+
             el.innerHTML = `<i class="fas ${iconClass}"></i>`;
-            
+
             // Create marker
             const marker = new mapboxgl.Marker({ element: el })
                 .setLngLat(location.coordinates)
                 .setPopup(new mapboxgl.Popup().setHTML(`<b>${location.name}</b>`))
                 .addTo(map);
-            
+
             // Store reference
             campusPoints.push(marker);
         });
     }
-    
+
     // Initialize user location tracking
     function initUserLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(position => {
                 const lngLat = [position.coords.longitude, position.coords.latitude];
-                
+
                 if (!userMarker) {
                     // Create user location marker
                     const el = document.createElement('div');
@@ -304,7 +348,7 @@
                     el.style.borderRadius = '50%';
                     el.style.background = '#ff69b4';
                     el.style.boxShadow = '0 0 0 4px rgba(255, 105, 180, 0.3)';
-                    
+
                     userMarker = new mapboxgl.Marker({ element: el })
                         .setLngLat(lngLat)
                         .setPopup(new mapboxgl.Popup().setHTML('<b>Your Location</b>'))
@@ -322,7 +366,7 @@
             });
         }
     }
-    
+
     // Initialize filter functionality
     function initRouteFilter() {
         const filterSelect = document.getElementById('route-filter');
@@ -331,7 +375,7 @@
             fetchBuses(); // Reload with new filter
         });
     }
-    
+
     // Simple ad rotation system
     function setupAds() {
         const ads = [
@@ -351,10 +395,10 @@
                 bgColor: '#fff8e1'
             }
         ];
-        
+
         let currentAdIndex = 0;
         const adSpace = document.getElementById('ad-space');
-        
+
         function displayAd(index) {
             const ad = ads[index];
             adSpace.style.background = ad.bgColor;
@@ -365,51 +409,56 @@
                 </div>
             `;
         }
-        
+
         // Initial ad
         displayAd(0);
-        
+
         // Rotate ads every 20 seconds
         setInterval(() => {
             currentAdIndex = (currentAdIndex + 1) % ads.length;
             displayAd(currentAdIndex);
         }, 20000);
     }
-    
+
     // Initialize when map loads
     map.on('load', function() {
         // Add campus locations
         addCampusLocations();
-        
+
         // Start fetching bus data
         fetchBuses();
-        
+
         // Setup regular data refresh (every 5 seconds)
         setInterval(fetchBuses, 5000);
-        
+
         // Initialize user location tracking
         initUserLocation();
-        
+
         // Initialize filter
         initRouteFilter();
-        
+
         // Setup ad rotation
         setupAds();
+        
+        // Optionally start with sidebar collapsed
+        // Uncomment to have sidebar collapsed by default
+        // toggleSidebar();
     });
 </script>
 {% endblock %}
 
 {% block styles %}
 <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
-<link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet'>
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css'
+    rel='stylesheet'>
 <style>
     #map-container {
         position: relative;
         height: calc(100vh - 120px);
         width: 100%;
-        margin-top: 20px;
+        margin-top: 7px;
     }
-    
+
     #map {
         position: absolute;
         top: 0;
@@ -418,11 +467,11 @@
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    
+
     .map-overlay {
         position: absolute;
         top: 20px;
-        left: 20px;
+        left: 2px;
         z-index: 1;
         background: white;
         padding: 20px;
@@ -431,8 +480,36 @@
         max-width: 320px;
         max-height: calc(100% - 40px);
         overflow-y: auto;
+        transition: all 0.3s ease;
     }
     
+    /* Collapsed state */
+    .map-overlay.collapsed {
+        max-width: 150px;
+        padding: 24px;
+    }
+    
+    #sidebar-toggle {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #f8f9fa;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        z-index: 2;
+    }
+    
+    #sidebar-toggle:hover {
+        background: #e9ecef;
+    }
+
     .map-overlay h3 {
         margin-top: 0;
         margin-bottom: 15px;
@@ -440,7 +517,7 @@
         border-bottom: 2px solid #f0f0f0;
         padding-bottom: 10px;
     }
-    
+
     .bus-info {
         margin-bottom: 15px;
         padding: 15px;
@@ -449,29 +526,29 @@
         border-left: 4px solid #0d6efd;
         transition: all 0.3s ease;
     }
-    
+
     .bus-info:hover {
         background: #e9ecef;
         transform: translateY(-2px);
     }
-    
+
     .bus-info h4 {
         margin: 0 0 10px 0;
         font-size: 16px;
         display: flex;
         align-items: center;
     }
-    
+
     .bus-info h4 i {
         margin-right: 8px;
         color: #0d6efd;
     }
-    
+
     .bus-info p {
         margin: 5px 0;
         font-size: 14px;
     }
-    
+
     .bus-status {
         display: inline-block;
         padding: 3px 8px;
@@ -480,43 +557,43 @@
         font-weight: 600;
         margin-left: 8px;
     }
-    
+
     .status-active {
         background: #e8f5e9;
-        color: #2e7d32;
+        color: #000000;
     }
-    
+
     .status-inactive {
         background: #f5f5f5;
         color: #757575;
     }
-    
+
     .status-maintenance {
         background: #fff8e1;
         color: #f57f17;
     }
-    
+
     .last-update {
         font-size: 12px;
         color: #666;
         margin-top: 5px;
         font-style: italic;
     }
-    
+
     .bus-route {
         display: flex;
         align-items: center;
     }
-    
+
     .route-icon {
         margin-right: 8px;
         color: #555;
     }
-    
+
     .bus-actions {
         margin-top: 10px;
     }
-    
+
     .track-button {
         background: #0d6efd;
         color: white;
@@ -527,11 +604,11 @@
         font-size: 13px;
         transition: background 0.2s;
     }
-    
+
     .track-button:hover {
         background: #0b5ed7;
     }
-    
+
     .map-legend {
         position: absolute;
         bottom: 20px;
@@ -542,59 +619,97 @@
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         z-index: 1;
     }
-    
+
     .legend-item {
         display: flex;
         align-items: center;
         margin-bottom: 5px;
     }
-    
+
     .legend-icon {
         width: 15px;
         height: 15px;
         border-radius: 50%;
         margin-right: 10px;
     }
-    
+
     .user-location {
         background: #ff69b4;
     }
-    
+
     .active-bus {
         background: #4caf50;
     }
-    
+
     .inactive-bus {
         background: #9e9e9e;
     }
-    
+
     .poi {
         background: #ff9800;
     }
     
+    /* Bus marker styling */
+    .bus-marker {
+        width: 40px;
+        height: 40px;
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .bus-icon {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+    
+    .bus-icon .fa-bus {
+        transform: scaleX(-1); /* Flip the bus icon to face the right direction */
+    }
+    
+    .bus-number {
+        font-size: 10px;
+        font-weight: bold;
+        margin-top: 2px;
+        background: white;
+        border-radius: 8px;
+        padding: 0 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
     .animate-bus {
         animation: pulse 1.5s infinite;
     }
-    
+
     @keyframes pulse {
         0% {
-            box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+            transform: scale(1);
+            opacity: 1;
         }
-        70% {
-            box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+        50% {
+            transform: scale(1.1);
+            opacity: 0.9;
         }
         100% {
-            box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            transform: scale(1);
+            opacity: 1;
         }
     }
-    
+
     .bus-filter {
         margin-bottom: 15px;
         padding: 10px;
         background: #f8f9fa;
         border-radius: 4px;
     }
-    
+
     /* Spinner for loading state */
     .spinner {
         display: inline-block;
@@ -605,11 +720,11 @@
         border-radius: 50%;
         animation: spinner 1s linear infinite;
     }
-    
+
     @keyframes spinner {
         to {transform: rotate(360deg);}
     }
-    
+
     /* Ad space */
     .ad-container {
         position: absolute;
@@ -627,7 +742,7 @@
         z-index: 1;
         overflow: hidden;
     }
-    
+
     .ad-label {
         position: absolute;
         top: 2px;
@@ -635,7 +750,7 @@
         font-size: 10px;
         color: #666;
     }
-    
+
     .ad-content {
         width: 100%;
         height: 100%;
@@ -648,38 +763,49 @@
 
 {% block content %}
 <div class="container-fluid px-4">
-    <div class="row mt-4">
+    <!-- <div class="row mt-4">
         <div class="col-md-12">
             <h1 class="mb-4">Campus Shuttle Tracker</h1>
             <p class="text-muted">Track shuttle buses in real-time across KNUST campus</p>
         </div>
-    </div>
-    
+    </div> -->
+
     <div id="map-container">
         <div id="map"></div>
-        
+
         <div class="map-overlay">
-            <h3>Active Shuttles</h3>
-            
-            <div class="bus-filter">
-                <label for="route-filter" class="form-label">Filter by route:</label>
-                <select class="form-select form-select-sm" id="route-filter">
-                    <option value="all" selected>All Routes</option>
-                    <option value="main-gate">Main Gate Route</option>
-                    <option value="commercial">Commercial Area Route</option>
-                    <option value="science">Science & Engineering Route</option>
-                    <option value="halls">Halls Route</option>
-                </select>
-            </div>
-            
-            <div id="bus-list">
-                <div class="text-center py-3">
-                    <div class="spinner"></div>
-                    <p class="mt-2">Loading buses...</p>
+            <button id="sidebar-toggle" onclick="toggleSidebar()"
+                title="Collapse sidebar">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <div id="sidebar-content">
+                <h3>Active Shuttles</h3>
+
+                <div class="bus-filter">
+                    <label for="route-filter" class="form-label">Filter by
+                        route:</label>
+                    <select class="form-select form-select-sm"
+                        id="route-filter">
+                        <option value="all" selected>All Routes</option>
+                        <option value="main-gate">Main Gate Route</option>
+                        <option value="commercial">Commercial Area
+                            Route</option>
+                        <option value="science">Science & Engineering
+                            Route</option>
+                        <option value="halls">Halls Route</option>
+                    </select>
+                </div>
+
+                <div id="bus-list">
+                    <div class="text-center py-3">
+                        <div class="spinner"></div>
+                        <p class="mt-2">Loading buses...</p>
+                    </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="map-legend">
             <h6 class="mb-2">Map Legend</h6>
             <div class="legend-item">
@@ -699,14 +825,15 @@
                 <span>Campus Location</span>
             </div>
         </div>
-        
-        <div class="ad-container">
-            <span class="ad-label">Advertisement</span>
-            <div class="ad-content" id="ad-space">
-                <!-- Ad content will be placed here -->
-                <p class="text-center">Support HESA by advertising here</p>
-            </div>
-        </div>
+
+        <!-- <div class="ad-container"> -->
+        <!-- <span class="ad-label">Advertisement</span> -->
+        <!-- <div class="ad-content" id="ad-space"> -->
+        <!-- Ad content will be placed here -->
+        <!-- <p class="text-center">Support HESA by advertising here</p> -->
+        <!-- </div> -->
+        <!-- </div> -->
+
     </div>
 </div>
 {% endblock %}

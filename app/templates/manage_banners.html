@@ -1,0 +1,469 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage Home Banners - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+<style>
+    .banner-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .banner-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        cursor: grab;
+        background-color: white;
+        position: relative;
+    }
+    
+    .banner-card.active {
+        border: 2px solid #28a745;
+    }
+    
+    .banner-card.inactive {
+        opacity: 0.7;
+        border: 2px solid #dc3545;
+    }
+    
+    .banner-img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+    
+    .banner-content {
+        padding: 15px;
+    }
+    
+    .banner-title {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .banner-desc {
+        margin: 0 0 15px 0;
+        font-size: 14px;
+        color: #666;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+    
+    .banner-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+    
+    .banner-status {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .status-active {
+        background-color: rgba(40, 167, 69, 0.15);
+        color: #28a745;
+    }
+    
+    .status-inactive {
+        background-color: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+    }
+    
+    .drag-handle {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 30px;
+        height: 30px;
+        background-color: rgba(0,0,0,0.5);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        cursor: grab;
+    }
+    
+    .banner-order {
+        position: absolute;
+        top: 10px;
+        left: 50px;
+        background-color: #007bff;
+        color: white;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+    }
+    
+    .add-banner-section {
+        margin-bottom: 30px;
+    }
+    
+    .add-banner-form {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .preview-container {
+        margin-top: 10px;
+        width: 100%;
+        height: 200px;
+        border: 1px dashed #ccc;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    #imagePreview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+    }
+    
+    .drag-indicator {
+        cursor: grab;
+    }
+    
+    /* Drop target styles */
+    .drop-target {
+        border: 2px dashed #007bff;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="editor-header mb-4">
+        <h1>Manage Home Banners</h1>
+        <p>Create, edit, and arrange banners for the home page carousel</p>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <p><strong>Instructions:</strong></p>
+                <ul>
+                    <li>Create up to 3 banners for the home page carousel</li>
+                    <li>Drag and drop banners to reorder them</li>
+                    <li>Toggle banners active/inactive with the switch button</li>
+                    <li>Only active banners will be displayed on the home page</li>
+                    <li>The order set here will be respected on the home page</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section-header">
+        <h2>Current Banners</h2>
+        <p>Drag to reorder (only 3 active banners will be shown)</p>
+    </div>
+    
+    <div class="banner-container" id="banner-sortable">
+        {% for banner in banners %}
+        <div class="banner-card {{ 'active' if banner.is_active else 'inactive' }}" data-id="{{ banner.id }}" data-order="{{ banner.order }}">
+            <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
+            <div class="banner-order">{{ loop.index }}</div>
+            <div class="banner-status {{ 'status-active' if banner.is_active else 'status-inactive' }}">
+                {{ 'Active' if banner.is_active else 'Inactive' }}
+            </div>
+            <img src="{{ banner.image_file if 'http' in banner.image_file else url_for('static', filename='uploads/banners/' + banner.image_file) }}" 
+                 alt="{{ banner.title }}" class="banner-img">
+            <div class="banner-content">
+                <h3 class="banner-title">{{ banner.title }}</h3>
+                <p class="banner-desc">{{ banner.description }}</p>
+                <div class="banner-actions">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input banner-toggle" type="checkbox" 
+                               id="toggle-{{ banner.id }}" 
+                               {{ 'checked' if banner.is_active else '' }}
+                               data-id="{{ banner.id }}">
+                        <label class="form-check-label" for="toggle-{{ banner.id }}">
+                            Visible
+                        </label>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('editor.edit_banner', banner_id=banner.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" 
+                                data-bs-target="#deleteBannerModal" 
+                                data-id="{{ banner.id }}" 
+                                data-title="{{ banner.title }}">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <p>No banners added yet. Add your first banner below.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="section-header mt-5">
+        <h2>Add New Banner</h2>
+    </div>
+    
+    <div class="add-banner-section">
+        <form method="POST" action="{{ url_for('editor.add_banner') }}" enctype="multipart/form-data" class="add-banner-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                <label for="{{ form.title.id }}">{{ form.title.label }}</label>
+                {{ form.title(class="form-control") }}
+                {% if form.title.errors %}
+                    <div class="text-danger">
+                        {% for error in form.title.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.description.id }}">{{ form.description.label }}</label>
+                {{ form.description(class="form-control") }}
+                {% if form.description.errors %}
+                    <div class="text-danger">
+                        {% for error in form.description.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.image.id }}">{{ form.image.label }}</label>
+                {{ form.image(class="form-control", id="bannerImage") }}
+                {% if form.image.errors %}
+                    <div class="text-danger">
+                        {% for error in form.image.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="preview-container mt-2">
+                    <img id="imagePreview" src="#" alt="Image Preview">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="form-check">
+                    {{ form.is_active(class="form-check-input") }}
+                    <label class="form-check-label" for="{{ form.is_active.id }}">
+                        Show this banner on the homepage
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Add Banner</button>
+                <a href="{{ url_for('editor.dashboard') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Banner Modal -->
+<div class="modal fade" id="deleteBannerModal" tabindex="-1" aria-labelledby="deleteBannerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteBannerModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the banner: <span id="bannerTitle"></span>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteBannerForm" method="POST">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image preview functionality
+        const bannerImage = document.getElementById('bannerImage');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        if (bannerImage) {
+            bannerImage.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.style.display = 'block';
+                        imagePreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.style.display = 'none';
+                }
+            });
+        }
+        
+        // Sortable functionality for drag and drop reordering
+        const bannerContainer = document.getElementById('banner-sortable');
+        if (bannerContainer) {
+            new Sortable(bannerContainer, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'drop-target',
+                onEnd: function(evt) {
+                    updateOrder();
+                }
+            });
+        }
+        
+        // Update order after drag and drop
+        function updateOrder() {
+            const bannerCards = document.querySelectorAll('.banner-card');
+            const orderData = [];
+            
+            bannerCards.forEach((card, index) => {
+                const bannerId = card.getAttribute('data-id');
+                orderData.push({
+                    id: bannerId,
+                    order: index
+                });
+                
+                // Update the displayed order number
+                const orderBadge = card.querySelector('.banner-order');
+                if (orderBadge) {
+                    orderBadge.textContent = index + 1;
+                }
+            });
+            
+            // Send the updated order to the server
+            fetch('{{ url_for("editor.update_banner_order") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ banners: orderData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Success notification could be added here
+                    console.log('Order updated successfully');
+                } else {
+                    console.error('Error updating order');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        // Toggle banner active/inactive state
+        const toggles = document.querySelectorAll('.banner-toggle');
+        toggles.forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const bannerId = this.getAttribute('data-id');
+                const isActive = this.checked;
+                
+                fetch('{{ url_for("editor.toggle_banner") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ 
+                        banner_id: bannerId,
+                        is_active: isActive
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the UI to reflect the change
+                        const card = document.querySelector(`.banner-card[data-id="${bannerId}"]`);
+                        const statusBadge = card.querySelector('.banner-status');
+                        
+                        if (isActive) {
+                            card.classList.remove('inactive');
+                            card.classList.add('active');
+                            statusBadge.classList.remove('status-inactive');
+                            statusBadge.classList.add('status-active');
+                            statusBadge.textContent = 'Active';
+                        } else {
+                            card.classList.remove('active');
+                            card.classList.add('inactive');
+                            statusBadge.classList.remove('status-active');
+                            statusBadge.classList.add('status-inactive');
+                            statusBadge.textContent = 'Inactive';
+                        }
+                    } else {
+                        // Revert toggle if there was an error
+                        this.checked = !isActive;
+                        console.error('Error updating banner status');
+                    }
+                })
+                .catch(error => {
+                    // Revert toggle if there was an error
+                    this.checked = !isActive;
+                    console.error('Error:', error);
+                });
+            });
+        });
+        
+        // Delete banner modal functionality
+        const deleteBannerModal = document.getElementById('deleteBannerModal');
+        if (deleteBannerModal) {
+            deleteBannerModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const bannerId = button.getAttribute('data-id');
+                const bannerTitle = button.getAttribute('data-title');
+                
+                const modalTitle = document.getElementById('bannerTitle');
+                modalTitle.textContent = bannerTitle;
+                
+                const form = document.getElementById('deleteBannerForm');
+                form.action = "{{ url_for('editor.delete_banner', banner_id=0) }}".replace('0', bannerId);
+            });
+        }
+    });
+</script>
+{% endblock %}

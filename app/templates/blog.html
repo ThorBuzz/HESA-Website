@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros/image_helper.html" import render_image %}
 
 {% block title %}Blog - HESA KNUST{% endblock %}
 
@@ -9,21 +10,30 @@
 {% block content %}
 <!-- Hero Section -->
 <section class="hero">
-    <img src="{{ url_for('static', filename='img/blog_header.jpg') }}" alt="Blog Header" class="hero-image">
+    <img src="{{ url_for('static', filename='img/blog placeholder.jpg') }}" alt="Blog Header" class="hero-image">
     <div class="hero-overlay"></div>
     <div class="hero-content">
         <h1 class="hero-title">HESA Blog</h1>
-        <p>Stay updated with the latest news, research, and events</p>
+        <p>Stay updated with the latest health sciences news, research, and events from KNUST</p>
     </div>
 </section>
 
-<!-- Blog Posts Grid -->
-<div class="container">
+<!-- Blog Posts Section -->
+<div class="container blog-container">
+    <div class="section-heading">
+        <h2>Latest Articles</h2>
+    </div>
+    
     <div class="blog-grid">
         {% for post in posts.items %}
         <article class="blog-card">
             <div class="card-image-container">
-                <img src="{{ url_for('static', filename='uploads/blog_pics/' + post.image_file) }}" alt="{{ post.title }}" class="card-image">
+                {% if post.category %}
+                <div class="card-category">{{ post.category }}</div>
+                {% else %}
+                <div class="card-category">Health</div>
+                {% endif %}
+                {{ render_image(post.image_file, 'blog_pics/', 'img/default_blog.jpg', post.title, 'card-image') }}
             </div>
             <div class="card-content">
                 <h2 class="card-title">{{ post.title }}</h2>
@@ -37,28 +47,45 @@
                         <i class="far fa-clock"></i>
                         {{ post.read_time }} min read
                     </span>
+                    {% if post.author %}
+                    <span class="meta-item">
+                        <i class="far fa-user"></i>
+                        {{ post.author.name }}
+                    </span>
+                    {% endif %}
                 </div>
-                <a href="{{ url_for('blog.post', post_id=post.id) }}" class="read-more">Read More</a>
+                <a href="{{ url_for('blog.post', post_id=post.id) }}" class="read-more">
+                    Read Article
+                    <i class="fas fa-arrow-right read-more-icon"></i>
+                </a>
             </div>
         </article>
         {% else %}
         <div class="no-posts">
-            <p>No posts available at the moment.</p>
+            <div class="no-posts-icon">
+                <i class="far fa-newspaper"></i>
+            </div>
+            <p>No articles available at the moment.</p>
+            <p>Check back soon for the latest updates from HESA!</p>
         </div>
         {% endfor %}
     </div>
     
     <!-- Pagination -->
-    {% if posts.items %}
+    {% if posts.items and posts.pages > 1 %}
     <div class="pagination-container">
         <ul class="pagination">
             {% if posts.has_prev %}
-            <li class="page-item">
-                <a class="page-link" href="{{ url_for('blog.index', page=posts.prev_num) }}">Previous</a>
+            <li class="page-item nav-link">
+                <a class="page-link" href="{{ url_for('blog.index', page=posts.prev_num) }}">
+                    <i class="fas fa-chevron-left"></i> Prev
+                </a>
             </li>
             {% else %}
-            <li class="page-item disabled">
-                <span class="page-link">Previous</span>
+            <li class="page-item nav-link disabled">
+                <span class="page-link">
+                    <i class="fas fa-chevron-left"></i> Prev
+                </span>
             </li>
             {% endif %}
             
@@ -81,12 +108,16 @@
             {% endfor %}
             
             {% if posts.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="{{ url_for('blog.index', page=posts.next_num) }}">Next</a>
+            <li class="page-item nav-link">
+                <a class="page-link" href="{{ url_for('blog.index', page=posts.next_num) }}">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
             </li>
             {% else %}
-            <li class="page-item disabled">
-                <span class="page-link">Next</span>
+            <li class="page-item nav-link disabled">
+                <span class="page-link">
+                    Next <i class="fas fa-chevron-right"></i>
+                </span>
             </li>
             {% endif %}
         </ul>

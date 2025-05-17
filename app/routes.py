@@ -1,13 +1,14 @@
-from flask import Blueprint, render_template, url_for, flash, redirect, request, jsonify, abort
+from flask import Blueprint, render_template, url_for, flash, redirect, request, jsonify, abort, current_app
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db
-from app.models import User, BlogPost, Comment, PersonalityOfTheWeek, PotwComment, Event, BusLocation
+from app.models import User, BlogPost, Comment, PersonalityOfTheWeek, PotwComment, Event, BusLocation, HomeBanner
 from app.forms import (AssignBusForm, RegistrationForm, LoginForm, BlogPostForm, CommentForm, 
-                      PotwForm, PotwCommentForm, EventForm, BusLocationForm)
+                      PotwForm, PotwCommentForm, EventForm, BusLocationForm, HomeBannerForm)
 import os
 import secrets
 from PIL import Image
 from datetime import datetime
+from app.utils.s3_helper import upload_file_to_s3
 
 # Create blueprints
 main = Blueprint('main', __name__)
@@ -16,9 +17,27 @@ blog = Blueprint('blog', __name__, url_prefix='/blog')
 editor = Blueprint('editor', __name__, url_prefix='/editor')
 
 # Helper functions
-# Helper functions
 def save_image(form_image, folder='uploads'):
-    """Save an uploaded image with a unique filename"""
+    """
+    Save an uploaded image with a unique filename
+    Uses S3 if configured, otherwise saves locally
+    """
+    if current_app.config.get('USE_S3', False):
+        # Use S3 for file storage
+        file_url = upload_file_to_s3(form_image, folder=folder)
+        if file_url:
+            # Return the full URL for S3 images
+            return file_url
+        else:
+            # Fallback to local storage if S3 upload fails
+            print("S3 upload failed, falling back to local storage")
+            return save_image_locally(form_image, folder)
+    else:
+        # Use local storage
+        return save_image_locally(form_image, folder)
+
+def save_image_locally(form_image, folder='uploads'):
+    """Save an uploaded image with a unique filename to the local filesystem"""
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_image.filename)
     picture_fn = random_hex + f_ext
@@ -41,12 +60,17 @@ def save_image(form_image, folder='uploads'):
 def landing():
     return render_template('index.html')
 
+
 @main.route('/home')
 def home():
     events = Event.query.order_by(Event.event_date.desc()).limit(3).all()
     potw = PersonalityOfTheWeek.query.filter_by(is_active=True).first()
     latest_posts = BlogPost.query.order_by(BlogPost.date_posted.desc()).limit(3).all()
-    return render_template('home.html', events=events, potw=potw, posts=latest_posts)
+    
+    # Get the active and ordered banners (max 3)
+    banners = HomeBanner.query.filter_by(is_active=True).order_by(HomeBanner.order).limit(3).all()
+    
+    return render_template('home.html', events=events, potw=potw, posts=latest_posts, banners=banners)
 
 @main.route('/map')
 def map():
@@ -280,8 +304,6 @@ def update_bus():
         return redirect(url_for('editor.dashboard'))
     return render_template('update_bus.html', form=form)
 
-# Add this to the editor routes in routes.py
-
 @editor.route('/assign_bus', methods=['GET', 'POST'])
 @login_required
 def assign_bus():
@@ -321,3 +343,381 @@ def assign_bus():
     bus_assignments = BusLocation.query.all()
     
     return render_template('assign_bus.html', form=form, assignments=bus_assignments)
+
+
+
+@editor.route('/post/edit/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def edit_post(post_id):
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    post = BlogPost.query.get_or_404(post_id)
+    
+    # Check if current user is the author or an admin
+    if post.author != current_user and current_user.role != 'admin':
+        abort(403)
+    
+    form = BlogPostForm()
+    
+    if form.validate_on_submit():
+        # Update post data
+        post.title = form.title.data
+        post.content = form.content.data
+        post.excerpt = form.excerpt.data
+        post.category = form.category.data
+        post.read_time = form.read_time.data
+        
+        # Update image if a new one is provided
+        if form.image.data:
+            # Delete old image if it's from S3
+            if 'http' in post.image_file and post.image_file != 'default_blog.jpg':
+                from app.utils.s3_helper import delete_file_from_s3
+                delete_file_from_s3(post.image_file)
+            
+            # Save new image
+            post.image_file = save_image(form.image.data, 'blog_pics')
+        
+        db.session.commit()
+        flash('Your post has been updated!', 'success')
+        return redirect(url_for('editor.dashboard'))
+    
+    # Pre-populate form with existing data
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+        form.excerpt.data = post.excerpt
+        form.category.data = post.category
+        form.read_time.data = post.read_time
+    
+    return render_template('edit_post.html', form=form, post=post, title='Edit Post')
+
+@editor.route('/potw/edit/<int:potw_id>', methods=['GET', 'POST'])
+@login_required
+def edit_potw(potw_id):
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    personality = PersonalityOfTheWeek.query.get_or_404(potw_id)
+    form = PotwForm()
+    
+    if form.validate_on_submit():
+        # Set all active personalities to inactive if this one is marked as active
+        if form.is_active.data and not personality.is_active:
+            PersonalityOfTheWeek.query.filter_by(is_active=True).update({'is_active': False})
+        
+        # Update personality data
+        personality.name = form.name.data
+        personality.title = form.title.data
+        personality.bio = form.bio.data
+        personality.school = form.school.data
+        personality.year = form.year.data
+        personality.high_school = form.high_school.data
+        personality.quote = form.quote.data
+        personality.is_active = form.is_active.data
+        
+        # Update image if a new one is provided
+        if form.image.data:
+            # Delete old image if it's from S3
+            if 'http' in personality.image_file:
+                from app.utils.s3_helper import delete_file_from_s3
+                delete_file_from_s3(personality.image_file)
+            
+            # Save new image
+            personality.image_file = save_image(form.image.data, 'potw_pics')
+        
+        db.session.commit()
+        flash('Personality has been updated!', 'success')
+        return redirect(url_for('editor.dashboard'))
+    
+    # Pre-populate form with existing data
+    elif request.method == 'GET':
+        form.name.data = personality.name
+        form.title.data = personality.title
+        form.bio.data = personality.bio
+        form.school.data = personality.school
+        form.year.data = personality.year
+        form.high_school.data = personality.high_school
+        form.quote.data = personality.quote
+        form.is_active.data = personality.is_active
+    
+    return render_template('edit_potw.html', form=form, personality=personality, title='Edit Personality')
+
+@editor.route('/event/edit/<int:event_id>', methods=['GET', 'POST'])
+@login_required
+def edit_event(event_id):
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    event = Event.query.get_or_404(event_id)
+    form = EventForm()
+    
+    if form.validate_on_submit():
+        # Update event data
+        event.title = form.title.data
+        event.description = form.description.data
+        event.event_date = form.event_date.data
+        event.location = form.location.data
+        
+        # Update image if a new one is provided
+        if form.image.data:
+            # Delete old image if it's from S3
+            if event.image_file and 'http' in event.image_file:
+                from app.utils.s3_helper import delete_file_from_s3
+                delete_file_from_s3(event.image_file)
+            
+            # Save new image
+            event.image_file = save_image(form.image.data, 'event_pics')
+        
+        db.session.commit()
+        flash('Event has been updated!', 'success')
+        return redirect(url_for('editor.dashboard'))
+    
+    # Pre-populate form with existing data
+    elif request.method == 'GET':
+        form.title.data = event.title
+        form.description.data = event.description
+        form.event_date.data = event.event_date
+        form.location.data = event.location
+    
+    return render_template('edit_event.html', form=form, event=event, title='Edit Event')
+
+@main.route('/event/<int:event_id>')
+def event(event_id):
+    event = Event.query.get_or_404(event_id)
+    return render_template('event.html', event=event)
+
+
+@editor.route('/post/delete/<int:post_id>', methods=['POST', 'DELETE'])
+@login_required
+def delete_post(post_id):
+    # Check permissions
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    post = BlogPost.query.get_or_404(post_id)
+    
+    # Check if current user is the author or an admin
+    if post.author != current_user and current_user.role != 'admin':
+        abort(403)
+    
+    # Delete image from S3 if applicable
+    if post.image_file and post.image_file != 'default_blog.jpg' and 'http' in post.image_file:
+        from app.utils.s3_helper import delete_file_from_s3
+        delete_file_from_s3(post.image_file)
+    
+    # Delete all comments associated with the post
+    Comment.query.filter_by(post_id=post.id).delete()
+    
+    # Delete the post
+    db.session.delete(post)
+    db.session.commit()
+    
+    flash('Blog post has been deleted!', 'success')
+    return redirect(url_for('editor.dashboard'))
+
+@editor.route('/potw/delete/<int:potw_id>', methods=['POST', 'DELETE'])
+@login_required
+def delete_potw(potw_id):
+    # Check permissions
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    personality = PersonalityOfTheWeek.query.get_or_404(potw_id)
+    
+    # Delete image from S3 if applicable
+    if personality.image_file and 'http' in personality.image_file:
+        from app.utils.s3_helper import delete_file_from_s3
+        delete_file_from_s3(personality.image_file)
+    
+    # Delete all comments associated with the personality
+    PotwComment.query.filter_by(potw_id=personality.id).delete()
+    
+    # Check if deleting the active personality
+    is_active = personality.is_active
+    
+    # Delete the personality
+    db.session.delete(personality)
+    db.session.commit()
+    
+    # If the active personality was deleted, make another one active
+    if is_active:
+        # Find the most recent personality and make it active
+        newest = PersonalityOfTheWeek.query.order_by(PersonalityOfTheWeek.created_at.desc()).first()
+        if newest:
+            newest.is_active = True
+            db.session.commit()
+            flash(f'Active personality deleted and {newest.name} was set as active.', 'info')
+    
+    flash('Personality has been deleted!', 'success')
+    return redirect(url_for('editor.dashboard'))
+
+@editor.route('/event/delete/<int:event_id>', methods=['POST', 'DELETE'])
+@login_required
+def delete_event(event_id):
+    # Check permissions
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    event = Event.query.get_or_404(event_id)
+    
+    # Delete image from S3 if applicable
+    if event.image_file and 'http' in event.image_file:
+        from app.utils.s3_helper import delete_file_from_s3
+        delete_file_from_s3(event.image_file)
+    
+    # Delete the event
+    db.session.delete(event)
+    db.session.commit()
+    
+    flash('Event has been deleted!', 'success')
+    return redirect(url_for('editor.dashboard'))
+
+
+# Add these routes to your editor blueprint section
+
+@editor.route('/banners', methods=['GET'])
+@login_required
+def manage_banners():
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    form = HomeBannerForm()
+    banners = HomeBanner.query.order_by(HomeBanner.order).all()
+    
+    return render_template('manage_banners.html', form=form, banners=banners)
+
+@editor.route('/banners/add', methods=['POST'])
+@login_required
+def add_banner():
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    form = HomeBannerForm()
+    
+    if form.validate_on_submit():
+        image_file = None
+        if form.image.data:
+            image_file = save_image(form.image.data, 'banners')
+        
+        # Get the highest order value to place this one at the end
+        highest_order = db.session.query(db.func.max(HomeBanner.order)).scalar() or -1
+        
+        banner = HomeBanner(
+            title=form.title.data,
+            description=form.description.data,
+            image_file=image_file,
+            is_active=form.is_active.data,
+            order=highest_order + 1
+        )
+        
+        db.session.add(banner)
+        db.session.commit()
+        
+        flash('Banner added successfully!', 'success')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
+    
+    return redirect(url_for('editor.manage_banners'))
+
+@editor.route('/banners/edit/<int:banner_id>', methods=['GET', 'POST'])
+@login_required
+def edit_banner(banner_id):
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    banner = HomeBanner.query.get_or_404(banner_id)
+    form = HomeBannerForm()
+    
+    if form.validate_on_submit():
+        banner.title = form.title.data
+        banner.description = form.description.data
+        banner.is_active = form.is_active.data
+        
+        # Update image if a new one is provided
+        if form.image.data:
+            # Delete old image if it's from S3
+            if banner.image_file and 'http' in banner.image_file:
+                from app.utils.s3_helper import delete_file_from_s3
+                delete_file_from_s3(banner.image_file)
+            
+            # Save new image
+            banner.image_file = save_image(form.image.data, 'banners')
+        
+        db.session.commit()
+        flash('Banner updated successfully!', 'success')
+        return redirect(url_for('editor.manage_banners'))
+    
+    # Pre-populate form with existing data
+    elif request.method == 'GET':
+        form.title.data = banner.title
+        form.description.data = banner.description
+        form.is_active.data = banner.is_active
+    
+    return render_template('edit_banner.html', form=form, banner=banner)
+
+@editor.route('/banners/delete/<int:banner_id>', methods=['POST'])
+@login_required
+def delete_banner(banner_id):
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    banner = HomeBanner.query.get_or_404(banner_id)
+    
+    # Delete image from S3 if applicable
+    if banner.image_file and 'http' in banner.image_file:
+        from app.utils.s3_helper import delete_file_from_s3
+        delete_file_from_s3(banner.image_file)
+    
+    db.session.delete(banner)
+    
+    # Reorder remaining banners
+    remaining_banners = HomeBanner.query.order_by(HomeBanner.order).all()
+    for i, b in enumerate(remaining_banners):
+        b.order = i
+    
+    db.session.commit()
+    
+    flash('Banner deleted successfully!', 'success')
+    return redirect(url_for('editor.manage_banners'))
+
+@editor.route('/banners/update-order', methods=['POST'])
+@login_required
+def update_banner_order():
+    if current_user.role not in ['admin', 'editor']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    banners_data = data.get('banners', [])
+    
+    for banner_data in banners_data:
+        banner_id = banner_data.get('id')
+        new_order = banner_data.get('order')
+        
+        banner = HomeBanner.query.get(banner_id)
+        if banner:
+            banner.order = new_order
+    
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@editor.route('/banners/toggle', methods=['POST'])
+@login_required
+def toggle_banner():
+    if current_user.role not in ['admin', 'editor']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    banner_id = data.get('banner_id')
+    is_active = data.get('is_active')
+    
+    banner = HomeBanner.query.get(banner_id)
+    if banner:
+        banner.is_active = is_active
+        db.session.commit()
+        return jsonify({'success': True})
+    
+    return jsonify({'success': False, 'error': 'Banner not found'}), 404

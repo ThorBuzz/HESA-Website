@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros/image_helper.html" import render_image %}
 
 {% block title %}{{ personality.name }} - Personality of the Week | HESA KNUST{% endblock %}
 
@@ -9,6 +10,11 @@
 {% block content %}
 <!-- Personality Header Banner -->
 <div class="potw-banner">
+    <div class="banner-graphics">
+        <div class="banner-shape shape-1"></div>
+        <div class="banner-shape shape-2"></div>
+        <div class="banner-shape shape-3"></div>
+    </div>
     <div class="container">
         <div class="potw-banner-content">
             <div class="potw-label">
@@ -20,25 +26,26 @@
 
 <div class="container potw-container">
     <div class="row">
-        <div class="col-lg-8 mx-auto">
+        <div class="col-lg-10 mx-auto">
             <div class="potw-card">
                 <!-- Profile Header -->
                 <div class="potw-profile-header">
                     <div class="potw-image-wrapper">
                         <!-- Enlarged image container -->
                         <div class="potw-image-container" id="imageContainer">
-                            <img src="{{ url_for('static', filename='/potw_pics/' + personality.image_file) }}" 
-                                 alt="{{ personality.name }}" class="potw-image">
+                            {{ render_image(personality.image_file, 'potw_pics/', 'img/default_potw.jpg', personality.name, 'potw-image') }}
                             <div class="image-overlay">
                                 <i class="fas fa-search-plus"></i>
-                                <span>Click to enlarge</span>
+                                <span>Click to view</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="potw-profile-info">
-                        <h1 class="potw-name">{{ personality.name }}</h1>
-                        <h2 class="potw-title">{{ personality.title }}</h2>
+                        <div class="potw-name-wrapper">
+                            <h1 class="potw-name">{{ personality.name }}</h1>
+                            <h2 class="potw-title">{{ personality.title }}</h2>
+                        </div>
                         
                         <div class="potw-meta">
                             <div class="potw-meta-item">
@@ -57,125 +64,156 @@
                         
                         {% if personality.quote %}
                         <div class="potw-quote">
-                            <i class="fas fa-quote-left quote-icon"></i>
+                            <div class="quote-icon-container">
+                                <i class="fas fa-quote-left quote-icon"></i>
+                            </div>
                             <blockquote>{{ personality.quote }}</blockquote>
                         </div>
                         {% endif %}
-                    </div>
-                </div>
-                
-                <!-- Biography Section -->
-                <div class="potw-biography">
-                    <h3 class="potw-section-title">Biography</h3>
-                    <div class="potw-content">
-                        {{ personality.bio|safe }}
-                    </div>
-                </div>
-                
-                <!-- Education Section -->
-                <div class="potw-education">
-                    <h3 class="potw-section-title">Educational Background</h3>
-                    <div class="potw-content">
-                        <div class="education-item">
-                            <div class="education-icon">
-                                <i class="fas fa-university"></i>
+                        
+                        <!-- Social Share Buttons - Moved to header -->
+                        <div class="header-social-share">
+                            <span class="share-label">Share Profile:</span>
+                            <div class="social-buttons">
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" class="social-button facebook" aria-label="Share on Facebook">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text=Meet {{ personality.name }}, HESA KNUST Personality of the Week" target="_blank" class="social-button twitter" aria-label="Share on Twitter">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="https://api.whatsapp.com/send?text=Meet {{ personality.name }}, HESA KNUST Personality of the Week: {{ request.url }}" target="_blank" class="social-button whatsapp" aria-label="Share on WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+                                <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url }}&title=HESA Personality of the Week - {{ personality.name }}" target="_blank" class="social-button linkedin" aria-label="Share on LinkedIn">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
                             </div>
-                            <div class="education-details">
-                                <h4>{{ personality.school }}</h4>
-                                <p>KNUST - {{ personality.year }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab Navigation -->
+                <div class="potw-tabs">
+                    <div class="tab-navigation">
+                        <button class="tab-button active" data-tab="biography">
+                            <i class="fas fa-user"></i>
+                            Biography
+                        </button>
+                        <button class="tab-button" data-tab="education">
+                            <i class="fas fa-graduation-cap"></i>
+                            Education
+                        </button>
+                        <button class="tab-button" data-tab="comments">
+                            <i class="fas fa-comments"></i>
+                            Comments <span class="comment-count">{{ comments|length }}</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Biography Tab -->
+                        <div class="tab-pane active" id="biography-tab">
+                            <div class="potw-biography">
+                                <h3 class="potw-section-title">Biography</h3>
+                                <div class="potw-content">
+                                    {{ personality.bio|safe }}
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="education-item">
-                            <div class="education-icon">
-                                <i class="fas fa-school"></i>
-                            </div>
-                            <div class="education-details">
-                                <h4>{{ personality.high_school }}</h4>
-                                <p>High School Education</p>
+                        <!-- Education Tab -->
+                        <div class="tab-pane" id="education-tab">
+                            <div class="potw-education">
+                                <h3 class="potw-section-title">Educational Background</h3>
+                                <div class="education-timeline">
+                                    <div class="education-item">
+                                        <div class="education-icon">
+                                            <i class="fas fa-university"></i>
+                                        </div>
+                                        <div class="education-details">
+                                            <h4>{{ personality.school }}</h4>
+                                            <div class="education-date">Present</div>
+                                            <p>KNUST - {{ personality.year }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="education-item">
+                                        <div class="education-icon">
+                                            <i class="fas fa-school"></i>
+                                        </div>
+                                        <div class="education-details">
+                                            <h4>{{ personality.high_school }}</h4>
+                                            <div class="education-date">Completed</div>
+                                            <p>High School Education</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Social Share -->
-                <div class="potw-social-share">
-                    <h3 class="potw-section-title">Share Profile</h3>
-                    <div class="social-buttons">
-                        <a href="#" class="social-button facebook">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="social-button twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="social-button whatsapp">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                        <a href="#" class="social-button linkedin">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Comments Section -->
-                <div class="potw-comments" id="comments">
-                    <h3 class="potw-section-title">
-                        Comments 
-                        <span class="comment-count">{{ comments|length }}</span>
-                    </h3>
-                    
-                    <div class="comment-form-wrapper">
-                        <h4>Leave a Comment</h4>
-                        <form class="potw-comment-form" method="POST" action="{{ url_for('main.potw_comment') }}">
-                            {{ form.hidden_tag() }}
-                            <div class="form-group">
-                                {{ form.author_name(class="form-control", placeholder="Your name") }}
-                                {% if form.author_name.errors %}
-                                    {% for error in form.author_name.errors %}
-                                        <span class="text-danger">{{ error }}</span>
+                        
+                        <!-- Comments Tab -->
+                        <div class="tab-pane" id="comments-tab">
+                            <div class="potw-comments" id="comments">
+                                <h3 class="potw-section-title">
+                                    Comments 
+                                    <span class="tab-comment-count">{{ comments|length }}</span>
+                                </h3>
+                                
+                                <div class="comment-form-wrapper">
+                                    <h4>Leave a Comment</h4>
+                                    <form class="potw-comment-form" method="POST" action="{{ url_for('main.potw_comment') }}">
+                                        {{ form.hidden_tag() }}
+                                        <div class="form-group">
+                                            {{ form.author_name(class="form-control", placeholder="Your name") }}
+                                            {% if form.author_name.errors %}
+                                                {% for error in form.author_name.errors %}
+                                                    <span class="text-danger">{{ error }}</span>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                        <div class="form-group">
+                                            {{ form.content(class="form-control", placeholder="Add a comment...", rows="4") }}
+                                            {% if form.content.errors %}
+                                                {% for error in form.content.errors %}
+                                                    <span class="text-danger">{{ error }}</span>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                        <button type="submit" class="potw-submit-btn">
+                                            <i class="fas fa-paper-plane"></i> Post Comment
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <div class="comments-list">
+                                    {% for comment in comments %}
+                                    <div class="comment-item">
+                                        <div class="comment-avatar">
+                                            <div class="avatar-placeholder">
+                                                {{ comment.author_name[:1]|upper }}
+                                            </div>
+                                        </div>
+                                        <div class="comment-body">
+                                            <div class="comment-header">
+                                                <span class="comment-author">{{ comment.author_name }}</span>
+                                                <span class="comment-date">{{ comment.date_posted.strftime('%b %d, %Y at %H:%M') }}</span>
+                                            </div>
+                                            <div class="comment-text">
+                                                {{ comment.content }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="no-comments">
+                                        <div class="no-comments-icon">
+                                            <i class="far fa-comment-dots"></i>
+                                        </div>
+                                        <p>No comments yet. Be the first to share your thoughts!</p>
+                                    </div>
                                     {% endfor %}
-                                {% endif %}
-                            </div>
-                            <div class="form-group">
-                                {{ form.content(class="form-control", placeholder="Add a comment...", rows="4") }}
-                                {% if form.content.errors %}
-                                    {% for error in form.content.errors %}
-                                        <span class="text-danger">{{ error }}</span>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-                            <button type="submit" class="potw-submit-btn">
-                                <i class="fas fa-paper-plane"></i> Post Comment
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <div class="comments-list">
-                        {% for comment in comments %}
-                        <div class="comment-item">
-                            <div class="comment-avatar">
-                                <div class="avatar-placeholder">
-                                    {{ comment.author_name[:1]|upper }}
-                                </div>
-                            </div>
-                            <div class="comment-body">
-                                <div class="comment-header">
-                                    <span class="comment-author">{{ comment.author_name }}</span>
-                                    <span class="comment-date">{{ comment.date_posted.strftime('%b %d, %Y at %H:%M') }}</span>
-                                </div>
-                                <div class="comment-text">
-                                    {{ comment.content }}
                                 </div>
                             </div>
                         </div>
-                        {% else %}
-                        <div class="no-comments">
-                            <div class="no-comments-icon">
-                                <i class="far fa-comment-dots"></i>
-                            </div>
-                            <p>No comments yet. Be the first to share your thoughts!</p>
-                        </div>
-                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -197,7 +235,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Animate elements on page load
-        const elementsToAnimate = document.querySelectorAll('.potw-card, .potw-profile-header, .potw-biography, .potw-education, .potw-social-share, .potw-comments');
+        const elementsToAnimate = document.querySelectorAll('.potw-card, .potw-profile-header, .tab-navigation, .tab-content');
         
         elementsToAnimate.forEach((el, index) => {
             setTimeout(() => {
@@ -205,13 +243,22 @@
             }, 100 * index);
         });
         
-        // Smooth scroll to comments when clicking on comment links
-        document.querySelectorAll('a[href="#comments"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+        // Tab functionality
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                // Hide all tab panes
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                // Show the selected tab pane
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
             });
         });
         
@@ -223,7 +270,7 @@
         
         if (imageContainer && imageModal && modalImage) {
             // Set up the modal image source
-            const profileImage = imageContainer.querySelector('.potw-image');
+            const profileImage = imageContainer.querySelector('img');
             modalImage.src = profileImage.src;
             
             // Open modal when clicking the image
@@ -257,6 +304,14 @@
                 }
             });
         }
+        
+        // Add hover animation to education items
+        const educationItems = document.querySelectorAll('.education-item');
+        educationItems.forEach((item, index) => {
+            setTimeout(() => {
+                item.classList.add('animated');
+            }, 300 + (index * 150));
+        });
     });
 </script>
 {% endblock %}

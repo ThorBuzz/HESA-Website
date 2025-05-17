@@ -1,337 +1,1261 @@
 {% extends "layout.html" %}
+{% from "macros/image_helper.html" import render_image %}
 
 {% block title %}Home - HESA KNUST{% endblock %}
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --primary: #2563eb;
+    --secondary: #4f46e5;
+    --accent: #f97316;
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --white: #ffffff;
+    --background: #f8fafc;
+  }
+  
+  /* Hero Section */
+  .hero-section {
+    position: relative;
+    height: 85vh;
+    overflow: hidden;
+    background-color: var(--text-dark);
+  }
+  
+  .hero-slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1s ease;
+    background-size: cover;
+    background-position: center;
+  }
+  
+  .hero-slide.active {
+    opacity: 1;
+  }
+  
+  .hero-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 5rem 3rem;
+    background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+    color: var(--white);
+    z-index: 10;
+  }
+  
+  .hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    animation: slideUp 0.8s ease;
+  }
+  
+  .hero-description {
+    font-size: 1.25rem;
+    max-width: 600px;
+    margin-bottom: 2rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    animation: slideUp 1s ease;
+  }
+  
+  .hero-cta {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    background-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    animation: slideUp 1.2s ease;
+  }
+  
+  .hero-cta:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+  }
+  
+  /* Hero Navigation Controls */
+  .hero-nav {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    transform: translateY(-50%);
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30px;
+    pointer-events: none;
+  }
+  
+  .hero-control {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    pointer-events: auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .hero-control:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  .hero-control:active {
+    transform: scale(0.95);
+  }
+  
+  .hero-prev i, .hero-next i {
+    color: white;
+    font-size: 1.2rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Smaller dot indicators (still keeping these) */
+  .indicators {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    padding: 10px 15px;
+    border-radius: 30px;
+  }
+  
+  .indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .indicator.active {
+    background: white;
+    transform: scale(1.2);
+  }
+  
+  /* Features Section */
+  .features-section {
+    padding: 5rem 0;
+    background-color: var(--background);
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+  
+  .section-heading {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+  
+  .section-subtitle {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+  
+  .feature-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .feature-img {
+    height: 200px;
+    overflow: hidden;
+  }
+  
+  .feature-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .feature-card:hover .feature-img img {
+    transform: scale(1.05);
+  }
+  
+  .feature-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  
+  .feature-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--text-dark);
+  }
+  
+  .feature-description {
+    color: var(--text-light);
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+    flex-grow: 1;
+  }
+  
+  .feature-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary);
+    font-weight: 600;
+    gap: 0.5rem;
+    transition: gap 0.3s ease;
+    margin-top: auto;
+  }
+  
+  .feature-link:hover {
+    gap: 0.75rem;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  .mt-5 {
+    margin-top: 3rem;
+  }
+  
+  /* Bus Tracker Preview */
+  .bus-tracker {
+    padding: 5rem 0;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: white;
+  }
+  
+  .bus-tracker-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  
+  .bus-tracker-left {
+    animation: fadeIn 1s ease;
+  }
+  
+  .bus-tracker-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+  }
+  
+  .bus-tracker-description {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    opacity: 0.9;
+  }
+  
+  .bus-benefits {
+    margin-top: 2rem;
+  }
+  
+  .benefit-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+  }
+  
+  .benefit-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  .bus-tracker-right {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    height: 400px;
+  }
+  
+  .bus-tracker-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Latest Updates Section */
+  .updates-section {
+    padding: 5rem 0;
+    background-color: var(--background);
+  }
+  
+  .updates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+  }
+  
+  .update-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .update-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .update-img {
+    height: 200px;
+    overflow: hidden;
+  }
+  
+  .update-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .update-card:hover .update-img img {
+    transform: scale(1.05);
+  }
+  
+  .update-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  
+  .update-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-bottom: 0.75rem;
+  }
+  
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .update-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--text-dark);
+    line-height: 1.4;
+  }
+  
+  .update-excerpt {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex-grow: 1;
+  }
+  
+  .update-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary);
+    font-weight: 600;
+    gap: 0.5rem;
+    transition: gap 0.3s ease;
+    margin-top: auto;
+  }
+  
+  .update-link:hover {
+    gap: 0.75rem;
+  }
+  
+  /* Entertainment Section */
+  .entertainment-section {
+    padding: 5rem 0;
+    background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+    color: white;
+  }
+  
+  .entertainment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+  
+  .entertainment-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .entertainment-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-10px);
+  }
+  
+  .entertainment-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  
+  .entertainment-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  .entertainment-description {
+    font-size: 1rem;
+    opacity: 0.9;
+    line-height: 1.6;
+  }
+  
+  /* POTW Section */
+  .potw-section {
+    padding: 5rem 0;
+    background-color: var(--background);
+  }
+  
+  .potw-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  
+  .potw-image {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: transform 0.5s ease;
+    aspect-ratio: 3/4;
+  }
+  
+  .potw-image:hover {
+    transform: translateY(-10px);
+  }
+  
+  .potw-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .potw-image:hover img {
+    transform: scale(1.05);
+  }
+  
+  .potw-content h2 {
+    font-size: 2.5rem;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+  
+  .potw-content p {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+  
+  .feature-list {
+    margin-top: 2rem;
+  }
+  
+  .feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: white;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  .feature-item:hover {
+    transform: translateX(10px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    height: 50px;
+    background: var(--primary);
+    border-radius: 10px;
+    margin-right: 1.25rem;
+    color: white;
+    font-size: 1.25rem;
+  }
+  
+  .feature-item-content h3 {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  .cta-button {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 1rem 2.5rem;
+    background: var(--primary);
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+  
+  .cta-button:hover {
+    background: #1d4ed8;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+  }
+  
+  /* Login Area */
+  .login-section {
+    padding: 5rem 0;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  }
+  
+  .login-container {
+    display: flex;
+    justify-content: center;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .role-cards {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .role-card {
+    background: white;
+    padding: 2.5rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
+    text-align: center;
+    width: 300px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: var(--text-dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .role-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  }
+  
+  .role-icon {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    background: var(--primary);
+    color: white;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  
+  .student-icon {
+    background: #10b981;
+  }
+  
+  .role-card h2 {
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+  }
+  
+  .role-card p {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+  }
+  
+  .role-button {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary);
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .student-button {
+    background: #10b981;
+  }
+  
+  .role-card:hover .role-button {
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+  
+  .role-card:hover .student-button {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .hero-title {
+      font-size: 3rem;
+    }
+    
+    .potw-container,
+    .bus-tracker-content {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+    
+    .bus-tracker-right {
+      height: 350px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .hero-section {
+      height: 70vh;
+    }
+    
+    .hero-title {
+      font-size: 2.5rem;
+    }
+    
+    .hero-description {
+      font-size: 1rem;
+    }
+    
+    .section-title {
+      font-size: 2rem;
+    }
+    
+    .feature-card {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .role-card {
+      width: 100%;
+      max-width: 300px;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .hero-section {
+      height: 60vh;
+    }
+    
+    .hero-title {
+      font-size: 2rem;
+    }
+    
+    .hero-content {
+      padding: 3rem 1.5rem;
+    }
+    
+    .indicator {
+      width: 10px;
+      height: 10px;
+    }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<!-- Carousel Section -->
-<section class="carousel">
-    <div class="carousel-track">
-        <!-- Event Carousel Items - Dynamic from database -->
-        {% for event in events %}
-        <div class="carousel-slide {% if loop.first %}active{% endif %}">
-            {% if event.image_file %}
-            <img
-                src="{{ url_for('static', filename='uploads/event_pics/' + event.image_file) }}"
-                alt="{{ event.title }}" class="carousel-image">
-            {% else %}
-            <img src="{{ url_for('static', filename='img/default_event.jpg') }}"
-                alt="{{ event.title }}" class="carousel-image">
-            {% endif %}
-            <div class="carousel-content">
-                <h2 class="carousel-title">{{ event.title }}</h2>
-                <p class="carousel-description">{{
-                    event.description|truncate(120) }}</p>
-                <a href="#" class="carousel-button">Learn More</a>
-            </div>
-        </div>
-        {% else %}
-        <!-- Default items if no events -->
-        <div class="carousel-slide active">
-            <img
-                src="{{ url_for('static', filename='img/default_carousel1.jpg') }}"
-                alt="Health Talk Event" class="carousel-image">
-            <div class="carousel-content">
-                <h2 class="carousel-title">Healthcare Symposium 2025</h2>
-                <p class="carousel-description">Join us for an insightful
-                    session with leading medical professionals.</p>
-                <a href="#" class="carousel-button">Register Now</a>
-            </div>
-        </div>
-        <div class="carousel-slide">
-            <img
-                src="{{ url_for('static', filename='img/default_carousel2.jpg') }}"
-                alt="Student Elections" class="carousel-image">
-            <div class="carousel-content">
-                <h2 class="carousel-title">Campus Elections 2025</h2>
-                <p class="carousel-description">Shape the future of our campus.
-                    Vote for your representatives.</p>
-                <a href="#" class="carousel-button">Learn More</a>
-            </div>
-        </div>
-        <div class="carousel-slide">
-            <img
-                src="{{ url_for('static', filename='img/default_carousel3.jpg') }}"
-                alt="Sports Tournament" class="carousel-image">
-            <div class="carousel-content">
-                <h2 class="carousel-title">Inter-Faculty Sports Week</h2>
-                <p class="carousel-description">Experience the thrill of
-                    competition at our annual sports championship.</p>
-                <a href="#" class="carousel-button">View Schedule</a>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
+<!-- Hero Section (Improved Carousel) -->
+<section class="hero-section">
+  <div id="progressBar" class="progress-bar"></div>
 
-    <button class="carousel-control carousel-prev">
-        <i class="arrow arrow-left"></i>
-    </button>
-    <button class="carousel-control carousel-next">
-        <i class="arrow arrow-right"></i>
-    </button>
-    <div class="carousel-indicators"></div>
+  {% for banner in banners %}
+  <div class="hero-slide {% if loop.first %}active{% endif %}" 
+       style="background-image: url('{{ banner.image_file if 'http' in banner.image_file else url_for('static', filename='uploads/banners/' + banner.image_file) }}')">
+    <div class="hero-content">
+      <h1 class="hero-title">{{ banner.title }}</h1>
+      <p class="hero-description">{{ banner.description }}</p>
+      <!-- <a href="#" class="hero-cta">Learn More</a> -->
+    </div>
+  </div>
+  {% else %}
+  <!-- Fallback to events if no banners are set up -->
+  {% for event in events %}
+  <div class="hero-slide {% if loop.first %}active{% endif %}"
+       style="background-image: url('{{ event.image_file if 'http' in event.image_file else url_for('static', filename='uploads/event_pics/' + event.image_file) }}')">
+    <div class="hero-content">
+      <h1 class="hero-title">{{ event.title }}</h1>
+      <p class="hero-description">{{ event.description|truncate(120) }}</p>
+      <a href="{{ url_for('main.event', event_id=event.id) }}" class="hero-cta">Learn More</a>
+    </div>
+  </div>
+  {% else %}
+  <!-- Default items if no events or banners -->
+  <div class="hero-slide active" style="background-image: url('{{ url_for('static', filename='img/default_carousel1.jpg') }}')">
+    <div class="hero-content">
+      <h1 class="hero-title">Healthcare Symposium 2025</h1>
+      <p class="hero-description">Join us for an insightful session with leading medical professionals discussing the future of healthcare.</p>
+      <a href="#" class="hero-cta">Register Now</a>
+    </div>
+  </div>
+  <div class="hero-slide" style="background-image: url('{{ url_for('static', filename='img/default_carousel2.jpg') }}')">
+    <div class="hero-content">
+      <h1 class="hero-title">Campus Elections 2025</h1>
+      <p class="hero-description">Shape the future of our campus. Vote for your representatives and make your voice heard.</p>
+      <a href="#" class="hero-cta">Learn More</a>
+    </div>
+  </div>
+  <div class="hero-slide" style="background-image: url('{{ url_for('static', filename='img/default_carousel3.jpg') }}')">
+    <div class="hero-content">
+      <h1 class="hero-title">Inter-Faculty Sports Week</h1>
+      <p class="hero-description">Experience the thrill of competition at our annual sports championship between health science faculties.</p>
+      <a href="#" class="hero-cta">View Schedule</a>
+    </div>
+  </div>
+  {% endfor %}
+  {% endfor %}
+  
+  <!-- Hero Navigation Controls -->
+  <div class="hero-nav">
+    <div class="hero-control hero-prev">
+      <i class="fas fa-chevron-left"></i>
+    </div>
+    <div class="hero-control hero-next">
+      <i class="fas fa-chevron-right"></i>
+    </div>
+  </div>
+  
+  <div class="indicators"></div>
 </section>
 
-<!-- Health Awareness Section -->
-<section class="awareness-section" id="awareness">
-    <h2 class="section-title">Health Awareness Programs</h2>
-    <div class="awareness-grid">
-        <div class="awareness-card">
-            <div class="awareness-image">
-                <img
-                    src="{{ url_for('static', filename='img/awareness1.jpg') }}"
-                    alt="Health Program 1">
-            </div>
-            <div class="awareness-content">
-                <h3>Mental Health Awareness</h3>
-                <p>Comprehensive health awareness and prevention strategies for
-                    university students.</p>
-            </div>
-        </div>
-
-        <div class="awareness-card">
-            <div class="awareness-image">
-                <img
-                    src="{{ url_for('static', filename='img/awareness2.jpg') }}"
-                    alt="Health Program 2">
-            </div>
-            <div class="awareness-content">
-                <h3>Preventive Healthcare</h3>
-                <p>Advanced healthcare initiatives and community support for
-                    preventive care.</p>
-            </div>
-        </div>
-
-        <div class="awareness-card">
-            <div class="awareness-image">
-                <img
-                    src="{{ url_for('static', filename='img/awareness3.jpg') }}"
-                    alt="Health Program 3">
-            </div>
-            <div class="awareness-content">
-                <h3>Nutrition & Wellness</h3>
-                <p>Innovative approaches to healthcare and wellness through
-                    proper nutrition.</p>
-            </div>
-        </div>
+<!-- Health Awareness Section (Dynamic from Blog Posts) -->
+<section class="features-section">
+  <div class="container">
+    <div class="section-heading">
+      <h2 class="section-title">Health Awareness Programs</h2>
+      <p class="section-subtitle">Promoting health education and wellness in our community</p>
     </div>
+    
+    <div class="features-grid">
+      {% set health_posts = posts|selectattr('category', 'equalto', 'health')|list %}
+      
+      {% for post in health_posts[:3] %}
+      <div class="feature-card">
+        <div class="feature-img">
+          {{ render_image(post.image_file, 'blog_pics/', 'img/default_health.jpg', post.title) }}
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">{{ post.title }}</h3>
+          <p class="feature-description">{{ post.excerpt }}</p>
+          <a href="{{ url_for('blog.post', post_id=post.id) }}" class="feature-link">Learn more <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      {% else %}
+      <!-- Fallback content if no health posts are found -->
+      <div class="feature-card">
+        <div class="feature-img">
+          <img src="{{ url_for('static', filename='img/awareness1.jpg') }}" alt="Mental Health Awareness">
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Mental Health Awareness</h3>
+          <p class="feature-description">Supporting student mental wellbeing through education, resources, and community events dedicated to stress management and emotional health.</p>
+          <a href="#" class="feature-link">Learn more <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-img">
+          <img src="{{ url_for('static', filename='img/awareness2.jpg') }}" alt="Preventive Healthcare">
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Preventive Healthcare</h3>
+          <p class="feature-description">Promoting early detection and prevention strategies through regular health screenings, vaccinations, and educational workshops.</p>
+          <a href="#" class="feature-link">Learn more <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-img">
+          <img src="{{ url_for('static', filename='img/awareness3.jpg') }}" alt="Nutrition & Wellness">
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Nutrition & Wellness</h3>
+          <p class="feature-description">Empowering students with knowledge about balanced nutrition, physical fitness, and holistic wellness practices for optimal health.</p>
+          <a href="#" class="feature-link">Learn more <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    
+    {% if health_posts|length > 3 %}
+    <div class="text-center mt-5">
+      <a href="{{ url_for('blog.category', category='health') }}" class="cta-button">View All Health Topics</a>
+    </div>
+    {% endif %}
+  </div>
 </section>
 
-<!-- Latest Blog Posts Section -->
-<section class="blog-section" id="blog">
-    <h2 class="section-title">Latest Updates</h2>
-    <div class="blog-grid">
-        {% for post in posts %}
-        <article class="blog-card">
-            <div class="card-image-container">
-                <img
-                    src="{{ url_for('static', filename='/blog_pics/' + post.image_file) }}"
-                    alt="{{ post.title }}" class="card-image">
+<!-- Bus Tracker Preview Section (New) -->
+<section class="bus-tracker">
+  <div class="container">
+    <div class="bus-tracker-content">
+      <div class="bus-tracker-left">
+        <h2 class="bus-tracker-title">Bus Tracking System</h2>
+        <p class="bus-tracker-description">Never miss a shuttle again! Our new bus tracking system lets you see exactly where campus buses are and when they'll arrive at your stop.</p>
+        
+        <div class="bus-benefits">
+          <div class="benefit-item">
+            <div class="benefit-icon">
+              <i class="fas fa-map-marker-alt"></i>
             </div>
-            <div class="card-content">
-                <h2 class="card-title">{{ post.title }}</h2>
-                <p class="card-excerpt">{{ post.excerpt }}</p>
-                <div class="card-meta">
-                    <span class="meta-item">
-                        <i class="far fa-calendar"></i>
-                        {{ post.date_posted.strftime('%b %d, %Y') }}
-                    </span>
-                    <span class="meta-item">
-                        <i class="far fa-clock"></i>
-                        {{ post.read_time }} min read
-                    </span>
-                </div>
-                <a href="{{ url_for('blog.post', post_id=post.id) }}"
-                    class="read-more">Read More</a>
+            <div>
+              <h3>Live Location Updates</h3>
+              <!-- <p>See exactly where your bus is in real-time</p> -->
             </div>
-        </article>
-        {% else %}
-        <div class="no-posts">
-            <p>No posts available at the moment.</p>
+          </div>
+          
+          <div class="benefit-item">
+            <div class="benefit-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div>
+              <h3>Accurate Arrival Times</h3>
+              <!-- <p>Know exactly when to head to your stop</p> -->
+            </div>
+          </div>
+          
+          <div class="benefit-item">
+            <div class="benefit-icon">
+              <i class="fas fa-bell"></i>
+            </div>
+            <div>
+              <h3>Custom Notifications</h3>
+              <!-- <p>Get alerts when your bus is approaching</p> -->
+            </div>
+          </div>
         </div>
-        {% endfor %}
+        
+        <a href="#" class="hero-cta">Start</a>
+      </div>
+      
+      <div class="bus-tracker-right">
+        <img src="{{ url_for('static', filename='img/bus tracking.jpg') }}" alt="Bus Tracker App Preview" class="bus-tracker-img">
+      </div>
     </div>
+  </div>
 </section>
 
-<!-- Entertainment Section -->
-<section class="entertainment-section" id="entertainment">
-    <h2 class="section-title">Entertainment Updates</h2>
+<!-- Latest Updates Section (Blog Posts) -->
+<section class="updates-section">
+  <div class="container">
+    <div class="section-heading">
+      <h2 class="section-title">Latest Updates</h2>
+      <p class="section-subtitle">Stay informed with the latest news and events from HESA</p>
+    </div>
+    
+    <div class="updates-grid">
+      {% for post in posts %}
+      <article class="update-card">
+        <div class="update-img">
+          {{ render_image(post.image_file, 'blog_pics/', 'img/default_blog.jpg', post.title) }}
+        </div>
+        <div class="update-content">
+          <div class="update-meta">
+            <span class="meta-item">
+              <i class="far fa-calendar"></i>
+              {{ post.date_posted.strftime('%b %d, %Y') }}
+            </span>
+            <span class="meta-item">
+              <i class="far fa-clock"></i>
+              {{ post.read_time }} min read
+            </span>
+          </div>
+          <h2 class="update-title">{{ post.title }}</h2>
+          <p class="update-excerpt">{{ post.excerpt }}</p>
+          <a href="{{ url_for('blog.post', post_id=post.id) }}" class="update-link">Read More <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </article>
+      {% else %}
+      <div class="no-posts">
+        <p>No posts available at the moment. Check back soon for updates!</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Entertainment Section (Redesigned) -->
+<section class="entertainment-section">
+  <div class="container">
+    <div class="section-heading">
+      <h2 class="section-title">Entertainment Hub</h2>
+      <p class="section-subtitle">Discover exciting events and activities for students</p>
+    </div>
+    
     <div class="entertainment-grid">
-        <div class="entertainment-card">
-            <h3>Cultural Night</h3>
-            <p>Experience amazing entertainment and cultural activities
-                showcasing student talents.</p>
+      <div class="entertainment-card">
+        <div class="entertainment-icon">
+          <i class="fas fa-theater-masks"></i>
         </div>
-
-        <div class="entertainment-card">
-            <h3>Music Festival</h3>
-            <p>Join us for exciting performances and shows featuring local
-                artists.</p>
+        <h3 class="entertainment-title">Cultural Night</h3>
+        <p class="entertainment-description">Experience amazing entertainment and cultural activities showcasing diverse student talents from across all health science programs.</p>
+      </div>
+      
+      <div class="entertainment-card">
+        <div class="entertainment-icon">
+          <i class="fas fa-music"></i>
         </div>
-
-        <div class="entertainment-card">
-            <h3>Movie Screenings</h3>
-            <p>Weekly film screenings at the student center - free popcorn for
-                all attendees!</p>
+        <h3 class="entertainment-title">Music Festival</h3>
+        <p class="entertainment-description">Join us for exciting performances and shows featuring both local artists and talented students in our annual music celebration.</p>
+      </div>
+      
+      <div class="entertainment-card">
+        <div class="entertainment-icon">
+          <i class="fas fa-film"></i>
         </div>
+        <h3 class="entertainment-title">Movie Screenings</h3>
+        <p class="entertainment-description">Weekly film screenings at the student center with a focus on medical dramas, documentaries, and entertainment - free popcorn for all attendees!</p>
+      </div>
     </div>
+  </div>
 </section>
 
-<!-- Login Role Selection -->
-<div class="login-container">
-    <div class="role-cards">
-        <a href="{{ url_for('auth.login') }}?role=admin" class="role-card">
-            <div class="icon admin-icon">👨‍💼</div>
-            <h2>Admin</h2>
-            <p>Access dashboard and manage system settings</p>
-        </a>
-        <a href="{{ url_for('auth.login') }}?role=student" class="role-card">
-            <div class="icon student-icon">👨‍🎓</div>
-            <h2>Student</h2>
-            <p>Access your courses and learning materials</p>
-        </a>
-    </div>
-</div>
-
-<!-- Personality of the Week Section -->
-<section class="split-section-potw">
-    <div class="split-container">
-        <!-- Image Side -->
-        <div class="image-side fade-in">
-            {% if potw and potw.image_file %}
-            <img
-                src="{{ url_for('static', filename='/potw_pics/' + potw.image_file) }}"
-                alt="{{ potw.name }}">
-            {% else %}
-            <img src="{{ url_for('static', filename='img/default_potw.jpg') }}"
-                alt="Personality of the Week">
-            {% endif %}
-        </div>
-
-        <!-- Content Side -->
-        <div class="content-side fade-in">
-            <h2>Personality of the Week</h2>
-            {% if potw %}
-            <p>Delve into the life of this week's amazing individual</p>
-
-            <div class="feature-list">
-                <div class="feature-item">
-                    <div class="feature-icon">★</div>
-                    <div>
-                        <h3>{{ potw.school }}</h3>
-                        <p>{{ potw.year }}</p>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">⚡</div>
-                    <div>
-                        <h3>{{ potw.high_school }}</h3>
-                        <p>Accra, Ghana</p>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">♥</div>
-                    <div>
-                        <h3>{{ potw.quote }}</h3>
-                        <p>Personal Motto</p>
-                    </div>
-                </div>
+<!-- Personality of the Week Section (Redesigned) -->
+<section class="potw-section">
+  <div class="container">
+    <div class="potw-container">
+      <!-- Image Side -->
+      <div class="potw-image">
+        {% if potw %}
+        {{ render_image(potw.image_file, 'potw_pics/', 'img/default_potw.jpg', potw.name) }}
+        {% else %}
+        <img src="{{ url_for('static', filename='img/default_potw.jpg') }}" alt="Personality of the Week">
+        {% endif %}
+      </div>
+      
+      <!-- Content Side -->
+      <div class="potw-content">
+        <h2>Personality of the Week</h2>
+        {% if potw %}
+        <p>Meet our outstanding student who exemplifies academic excellence and community leadership</p>
+        
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="fas fa-graduation-cap"></i>
             </div>
-            {% else %}
-            <p>No personality featured this week. Check back later!</p>
-            {% endif %}
-
-            <a href="{{ url_for('main.potw') }}" class="cta-button">Read
-                More</a>
+            <div class="feature-item-content">
+              <h3>{{ potw.school }}</h3>
+              <p>{{ potw.year }}</p>
+            </div>
+          </div>
+          
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="fas fa-school"></i>
+            </div>
+            <div class="feature-item-content">
+              <h3>{{ potw.high_school }}</h3>
+              <p>Alumni</p>
+            </div>
+          </div>
+          
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="fas fa-quote-left"></i>
+            </div>
+            <div class="feature-item-content">
+              <h3>"{{ potw.quote }}"</h3>
+              <p>Personal Motto</p>
+            </div>
+          </div>
         </div>
+        
+        <a href="{{ url_for('main.potw') }}" class="cta-button">Read Full Profile</a>
+        {% else %}
+        <p>No personality featured this week. Check back soon to meet our next outstanding student!</p>
+        {% endif %}
+      </div>
     </div>
+  </div>
+</section>
+
+<!-- Login Section (Redesigned) -->
+<section class="login-section">
+  <div class="container">
+    <div class="section-heading">
+      <h2 class="section-title">Member Access</h2>
+      <p class="section-subtitle">Log in to access exclusive resources and features</p>
+    </div>
+    
+    <div class="login-container">
+      <div class="role-cards">
+        <a href="{{ url_for('auth.login') }}?role=admin" class="role-card">
+          <div class="role-icon">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <h2>Admin Portal</h2>
+          <p>Access dashboard and manage system settings, content, and user accounts</p>
+          <span class="role-button">Sign In</span>
+        </a>
+        
+        <a href="{{ url_for('auth.login') }}?role=student" class="role-card">
+          <div class="role-icon student-icon">
+            <i class="fas fa-user-graduate"></i>
+          </div>
+          <h2>Student Portal</h2>
+          <p>Access your courses, bus tracking, and exclusive student resources</p>
+          <span class="role-button student-button">Sign In</span>
+        </a>
+      </div>
+    </div>
+  </div>
 </section>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Carousel Functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const slides = document.querySelectorAll('.carousel-slide');
-        const prevButton = document.querySelector('.carousel-prev');
-        const nextButton = document.querySelector('.carousel-next');
-        const indicators = document.querySelector('.carousel-indicators');
-        let currentSlide = 0;
-
-        // Create indicators
-        slides.forEach((_, index) => {
-            const dot = document.createElement('div');
-            dot.classList.add('indicator');
-            if (index === 0) dot.classList.add('active');
-            dot.addEventListener('click', () => goToSlide(index));
-            indicators.appendChild(dot);
-        });
-
-        function updateSlide() {
-            slides.forEach(slide => slide.classList.remove('active'));
-            slides[currentSlide].classList.add('active');
-            
-            // Update indicators
-            const dots = document.querySelectorAll('.indicator');
-            dots.forEach(dot => dot.classList.remove('active'));
-            dots[currentSlide].classList.add('active');
-        }
-
-        function nextSlide() {
-            currentSlide = (currentSlide + 1) % slides.length;
-            updateSlide();
-        }
-
-        function prevSlide() {
-            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-            updateSlide();
-        }
-
-        function goToSlide(index) {
-            currentSlide = index;
-            updateSlide();
-        }
-
-        if (prevButton && nextButton) {
-            prevButton.addEventListener('click', prevSlide);
-            nextButton.addEventListener('click', nextSlide);
-        }
-
-        // Auto advance slides every 5 seconds if there are slides
-        if (slides.length > 0) {
-            setInterval(nextSlide, 5000);
-        }
+  document.addEventListener('DOMContentLoaded', function() {
+    // Hero Slider Functionality
+    const slides = document.querySelectorAll('.hero-slide');
+    const indicators = document.querySelector('.indicators');
+    const prevBtn = document.querySelector('.hero-prev');
+    const nextBtn = document.querySelector('.hero-next');
+    let currentSlide = 0;
+    
+    // Create indicators
+    slides.forEach((_, index) => {
+      const dot = document.createElement('div');
+      dot.classList.add('indicator');
+      if (index === 0) dot.classList.add('active');
+      dot.addEventListener('click', () => goToSlide(index));
+      indicators.appendChild(dot);
     });
-
+    
+    function updateSlide() {
+      slides.forEach(slide => slide.classList.remove('active'));
+      slides[currentSlide].classList.add('active');
+      
+      // Update indicators
+      const dots = document.querySelectorAll('.indicator');
+      dots.forEach(dot => dot.classList.remove('active'));
+      dots[currentSlide].classList.add('active');
+    }
+    
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % slides.length;
+      updateSlide();
+    }
+    
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+      updateSlide();
+    }
+    
+    function goToSlide(index) {
+      currentSlide = index;
+      updateSlide();
+    }
+    
+    // Add event listeners for navigation controls
+    if (prevBtn && nextBtn) {
+      prevBtn.addEventListener('click', prevSlide);
+      nextBtn.addEventListener('click', nextSlide);
+    }
+    
+    // Auto advance slides every 6 seconds if there are slides
+    if (slides.length > 1) {
+      const slideInterval = setInterval(nextSlide, 6000);
+      
+      // Pause auto-rotation when hovering over the hero section
+      const heroSection = document.querySelector('.hero-section');
+      if (heroSection) {
+        heroSection.addEventListener('mouseenter', () => {
+          clearInterval(slideInterval);
+        });
+        
+        heroSection.addEventListener('mouseleave', () => {
+          slideInterval = setInterval(nextSlide, 6000);
+        });
+      }
+    }
+    
     // Scroll progress bar
     function updateProgressBar() {
-        const scrollProgress = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-        const progressBar = document.getElementById('progressBar');
-        if (progressBar) {
-            progressBar.style.width = scrollProgress + '%';
-        }
+      const scrollProgress = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+      const progressBar = document.getElementById('progressBar');
+      if (progressBar) {
+        progressBar.style.width = scrollProgress + '%';
+      }
     }
-
+    
+    // Header appearance on scroll
+    const header = document.querySelector('.header');
+    function updateHeader() {
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    }
+    
     // Intersection Observer for animations
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
     }, { threshold: 0.1 });
-
-    // Observe all cards
-    document.querySelectorAll('.awareness-card, .entertainment-card').forEach(card => {
-        observer.observe(card);
+    
+    // Observe all animation elements
+    document.querySelectorAll('.feature-card, .entertainment-card, .update-card, .potw-image, .potw-content, .bus-tracker-left, .bus-tracker-right').forEach(el => {
+      observer.observe(el);
     });
-
-    // Update progress bar on scroll
+    
+    // Add event listeners
     window.addEventListener('scroll', updateProgressBar);
+    window.addEventListener('scroll', updateHeader);
+    
+    // Mobile menu functionality
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    const navMenu = document.querySelector('.nav');
+    
+    if (menuBtn && navMenu) {
+      menuBtn.addEventListener('click', function() {
+        navMenu.classList.toggle('active');
+        menuBtn.classList.toggle('active');
+      });
+    }
+  });
 </script>
 {% endblock %}

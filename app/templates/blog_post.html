@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros/image_helper.html" import render_image %}
 
 {% block title %}{{ post.title }} - HESA KNUST{% endblock %}
 
@@ -10,89 +11,201 @@
 {% block content %}
 <!-- Hero Section -->
 <section class="hero">
-    <img src="{{ url_for('static', filename='uploads/blog_pics/' + post.image_file) }}" alt="{{ post.title }}" class="hero-image">
+    {{ render_image(post.image_file, 'uploads/blog_pics/', 'img/default_blog.jpg', post.title, 'hero-image') }}
     <div class="hero-overlay"></div>
 </section>
 
-<div class="container d-flex flex-column align-items-center">
-    <div class="col-lg-8">
-        <section id="blog-details" class="blog-details section">
-            <div class="container">
-                <article class="article">
-                    <h2 class="title">{{ post.title }}</h2>
-                    
-                    <div class="meta-top">
-                        <ul>
-                            <li class="d-flex align-items-center">
-                                <i class="bi bi-person"></i>
-                                <a href="#">{{ post.author.username }}</a>
-                            </li>
-                            <li class="d-flex align-items-center">
-                                <i class="bi bi-clock"></i>
-                                <a href="#">
-                                    <time datetime="{{ post.date_posted.strftime('%Y-%m-%d') }}">
-                                        {{ post.date_posted.strftime('%b %d, %Y') }}
-                                    </time>
-                                </a>
-                            </li>
-                            <li class="d-flex align-items-center">
-                                <i class="bi bi-chat-dots"></i>
-                                <a href="#comments">{{ comments|length }} Comments</a>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <div class="content">
-                        {{ post.content|safe }}
-                    </div>
-                </article>
-                
-                <!-- Comment Section -->
-                <div id="comments" class="comments-section">
-                    <h3 class="comments-title">Comments ({{ comments|length }})</h3>
-                    
-                    <!-- Comment Form -->
-                    <div class="comment-form-container">
-                        <h4>Leave a Comment</h4>
-                        <form method="POST" action="{{ url_for('blog.comment', post_id=post.id) }}" class="comment-form">
-                            {{ form.hidden_tag() }}
-                            <div class="form-group">
-                                {{ form.content(class="form-control", placeholder="Add a comment...", rows=3) }}
-                                {% if form.content.errors %}
-                                    {% for error in form.content.errors %}
-                                        <span class="text-danger">{{ error }}</span>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-                            <button type="submit" class="submit-button">Post Comment</button>
-                        </form>
-                    </div>
-                    
-                    <!-- Comments Display -->
-                    <div class="comments-list">
-                        {% for comment in comments %}
-                        <div class="comment">
-                            <div class="comment-header">
-                                <span class="comment-author">
-                                    {% if comment.user %}
-                                        {{ comment.user.username }}
-                                    {% else %}
-                                        Anonymous
-                                    {% endif %}
-                                </span>
-                                <span class="comment-time">{{ comment.date_posted.strftime('%b %d, %Y at %H:%M') }}</span>
-                            </div>
-                            <p class="comment-content">{{ comment.content }}</p>
-                        </div>
-                        {% else %}
-                        <div class="no-comments">
-                            <p>No comments yet. Be the first to comment!</p>
-                        </div>
-                        {% endfor %}
-                    </div>
+<div class="container">
+    <div class="article-container">
+        <article class="article">
+            {% if post.category %}
+            <div class="post-category">{{ post.category }}</div>
+            {% else %}
+            <div class="post-category">Health Sciences</div>
+            {% endif %}
+            
+            <h1 class="title">{{ post.title }}</h1>
+            
+            <div class="meta-top">
+                <ul>
+                    <li>
+                        <i class="far fa-user"></i>
+                        <a href="#">{{ post.author.username }}</a>
+                    </li>
+                    <li>
+                        <i class="far fa-calendar"></i>
+                        <a href="#">
+                            <time datetime="{{ post.date_posted.strftime('%Y-%m-%d') }}">
+                                {{ post.date_posted.strftime('%b %d, %Y') }}
+                            </time>
+                        </a>
+                    </li>
+                    <li>
+                        <i class="far fa-clock"></i>
+                        <a href="#">{{ post.read_time }} min read</a>
+                    </li>
+                    <li>
+                        <i class="far fa-comment"></i>
+                        <a href="#comments">{{ comments|length }} Comments</a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="content">
+                {{ post.content|safe }}
+            </div>
+            
+            <!-- Tags Section -->
+            {% if post.tags %}
+            <div class="tags-section">
+                <h4 class="tags-title">Tags:</h4>
+                <div class="tags-list">
+                    {% for tag in post.tags.split(',') %}
+                    <a href="{{ url_for('blog.index', tag=tag.strip()) }}" class="tag">{{ tag.strip() }}</a>
+                    {% endfor %}
                 </div>
             </div>
-        </section>
+            {% endif %}
+            
+            <!-- Share Section -->
+            <div class="share-section">
+                <h4 class="share-title">Share:</h4>
+                <div class="share-buttons">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" class="share-button" aria-label="Share on Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text={{ post.title }}" target="_blank" class="share-button" aria-label="Share on Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url }}&title={{ post.title }}" target="_blank" class="share-button" aria-label="Share on LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="mailto:?subject={{ post.title }}&body=Check out this article: {{ request.url }}" class="share-button" aria-label="Share via Email">
+                        <i class="far fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Author Box -->
+            <!-- <div class="author-box">
+                <div class="author-image">
+                    {{ render_image(post.author.image_file, 'uploads/profile_pics/', 'img/default_profile.jpg', post.author.username) }}
+                </div>
+                <div class="author-info">
+                    <h4 class="author-name">{{ post.author.name }}</h4>
+                    <p class="author-bio">{{ post.author.bio|default('HESA Member', true) }}</p>
+                    <div class="author-social">
+                        {% if post.author.social_twitter %}
+                        <a href="{{ post.author.social_twitter }}" target="_blank" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        {% endif %}
+                        {% if post.author.social_facebook %}
+                        <a href="{{ post.author.social_facebook }}" target="_blank" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        {% endif %}
+                        {% if post.author.social_linkedin %}
+                        <a href="{{ post.author.social_linkedin }}" target="_blank" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        {% endif %}
+                        {% if post.author.social_instagram %}
+                        <a href="{{ post.author.social_instagram }}" target="_blank" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div> -->
+            
+            <!-- Post Navigation -->
+            {% if prev_post or next_post %}
+            <div class="post-navigation">
+                {% if prev_post %}
+                <a href="{{ url_for('blog.post', post_id=prev_post.id) }}" class="nav-previous">
+                    <span class="nav-subtitle">Previous Post</span>
+                    <span class="nav-title">{{ prev_post.title }}</span>
+                </a>
+                {% endif %}
+                
+                {% if next_post %}
+                <a href="{{ url_for('blog.post', post_id=next_post.id) }}" class="nav-next">
+                    <span class="nav-subtitle">Next Post</span>
+                    <span class="nav-title">{{ next_post.title }}</span>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Related Posts -->
+            {% if related_posts %}
+            <div class="related-posts">
+                <h3 class="related-posts-title">Related Posts</h3>
+                <div class="related-posts-grid">
+                    {% for related in related_posts %}
+                    <article class="blog-card">
+                        <div class="card-image-container">
+                            {{ render_image(related.image_file, 'uploads/blog_pics/', 'img/default_blog.jpg', related.title, 'card-image') }}
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">{{ related.title }}</h3>
+                            <a href="{{ url_for('blog.post', post_id=related.id) }}" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </article>
+        
+        <!-- Comment Section -->
+        <div id="comments" class="comments-section">
+            <h3 class="comments-title">Comments ({{ comments|length }})</h3>
+            
+            <!-- Comment Form -->
+            <div class="comment-form-container">
+                <h4>Leave a Comment</h4>
+                <form method="POST" action="{{ url_for('blog.comment', post_id=post.id) }}" class="comment-form">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.content(class="form-control", placeholder="Add a comment...", rows=3) }}
+                        {% if form.content.errors %}
+                            {% for error in form.content.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="submit-button">Post Comment</button>
+                </form>
+            </div>
+            
+            <!-- Comments Display -->
+            <div class="comments-list">
+                {% for comment in comments %}
+                <div class="comment">
+                    <div class="comment-header">
+                        <span class="comment-author">
+                            <i class="far fa-user-circle"></i>
+                            {% if comment.user %}
+                                {{ comment.user.username }}
+                            {% else %}
+                                Anonymous
+                            {% endif %}
+                        </span>
+                        <span class="comment-time">{{ comment.date_posted.strftime('%b %d, %Y at %H:%M') }}</span>
+                    </div>
+                    <p class="comment-content">{{ comment.content }}</p>
+                </div>
+                {% else %}
+                <div class="no-comments">
+                    <i class="far fa-comments"></i>
+                    <p>No comments yet. Be the first to comment!</p>
+                    <p>Share your thoughts and join the discussion.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

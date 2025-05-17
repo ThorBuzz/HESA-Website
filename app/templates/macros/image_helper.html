@@ -1,0 +1,11 @@
+{% macro render_image(image_path, folder, default_image, alt_text, class_name="") %}
+    {% if image_path %}
+        {% if 'http' in image_path %}
+            <img src="{{ image_path }}" alt="{{ alt_text }}" class="{{ class_name }}">
+        {% else %}
+            <img src="{{ url_for('static', filename=folder + '/' + image_path) }}" alt="{{ alt_text }}" class="{{ class_name }}">
+        {% endif %}
+    {% else %}
+        <img src="{{ url_for('static', filename=default_image) }}" alt="{{ alt_text }}" class="{{ class_name }}">
+    {% endif %}
+{% endmacro %}
