@@ -91,6 +91,11 @@ class PersonalityOfTheWeek(db.Model):
     year = db.Column(db.String(20))
     high_school = db.Column(db.String(100))
     quote = db.Column(db.String(200))
+    # Add social media username fields (not URLs)
+    twitter = db.Column(db.String(50))
+    facebook = db.Column(db.String(50))
+    instagram = db.Column(db.String(50))
+    linkedin = db.Column(db.String(50))
     is_active = db.Column(db.Boolean, default=True)  # Only one should be active at a time
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     

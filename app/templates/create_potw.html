@@ -3,9 +3,12 @@
 {% block title %}Create New Personality - HESA KNUST{% endblock %}
 
 {% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/editor.css') }}">
 <!-- Include summernote CSS -->
-<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+<link
+    href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css"
+    rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -17,135 +20,257 @@
                     <h2>{{ title }}</h2>
                     <p>Feature a new Personality of the Week</p>
                 </div>
-                
+
                 <form method="POST" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
-                    
+
                     <div class="form-group mb-3">
                         {{ form.name.label(class="form-label") }}
                         {% if form.name.errors %}
-                            {{ form.name(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.name.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
+                        {{ form.name(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.name.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
                         {% else %}
-                            {{ form.name(class="form-control") }}
+                        {{ form.name(class="form-control") }}
                         {% endif %}
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         {{ form.title.label(class="form-label") }}
                         {% if form.title.errors %}
-                            {{ form.title(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.title.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
+                        {{ form.title(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.title.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
                         {% else %}
-                            {{ form.title(class="form-control") }}
+                        {{ form.title(class="form-control") }}
                         {% endif %}
-                        <small class="text-muted">E.g., "Student Leader", "Pioneering Researcher"</small>
+                        <small class="text-muted">E.g., "Student Leader",
+                            "Pioneering Researcher"</small>
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         {{ form.school.label(class="form-label") }}
                         {% if form.school.errors %}
-                            {{ form.school(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.school.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
+                        {{ form.school(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.school.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
                         {% else %}
-                            {{ form.school(class="form-control") }}
+                        {{ form.school(class="form-control") }}
                         {% endif %}
-                        <small class="text-muted">E.g., "School of Medicine and Dentistry"</small>
+                        <small class="text-muted">E.g.,
+                            "School of Medicine and Dentistry"</small>
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         {{ form.year.label(class="form-label") }}
                         {% if form.year.errors %}
-                            {{ form.year(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.year.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
+                        {{ form.year(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.year.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
                         {% else %}
-                            {{ form.year(class="form-control") }}
+                        {{ form.year(class="form-control") }}
                         {% endif %}
-                        <small class="text-muted">E.g., "4th Year", "Final Year"</small>
+                        <small class="text-muted">E.g., "4th Year",
+                            "Final Year"</small>
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         {{ form.high_school.label(class="form-label") }}
                         {% if form.high_school.errors %}
-                            {{ form.high_school(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.high_school.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
+                        {{ form.high_school(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.high_school.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
                         {% else %}
-                            {{ form.high_school(class="form-control") }}
+                        {{ form.high_school(class="form-control") }}
                         {% endif %}
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         {{ form.quote.label(class="form-label") }}
                         {% if form.quote.errors %}
-                            {{ form.quote(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.quote.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
+                        {{ form.quote(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.quote.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
                         {% else %}
-                            {{ form.quote(class="form-control") }}
+                        {{ form.quote(class="form-control") }}
                         {% endif %}
-                        <small class="text-muted">A memorable quote or motto</small>
+                        <small class="text-muted">A memorable quote or
+                            motto</small>
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         {{ form.bio.label(class="form-label") }}
                         {% if form.bio.errors %}
-                            {{ form.bio(class="form-control summernote is-invalid", rows=10) }}
-                            <div class="invalid-feedback">
-                                {% for error in form.bio.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
+                        {{ form.bio(class="form-control summernote is-invalid",
+                        rows=10) }}
+                        <div class="invalid-feedback">
+                            {% for error in form.bio.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
                         {% else %}
-                            {{ form.bio(class="form-control summernote", rows=10) }}
+                        {{ form.bio(class="form-control summernote", rows=10) }}
                         {% endif %}
                     </div>
-                    
+                    <!-- Social Media Fields -->
+                    <div class="card mb-4 border-0 rounded-3 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Social Media (Optional)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="input-group">
+                                        <span
+                                            class="input-group-text bg-primary text-white"><i
+                                                class="fab fa-twitter"></i></span>
+                                        {{
+                                        form.twitter.label(class="form-label d-none")
+                                        }}
+                                        {% if form.twitter.errors %}
+                                        {{
+                                        form.twitter(class="form-control is-invalid",
+                                        placeholder="Twitter Username") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.twitter.errors
+                                            %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        {{ form.twitter(class="form-control",
+                                        placeholder="Twitter Username") }}
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">Just the username,
+                                        without @ symbol</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="input-group">
+                                        <span
+                                            class="input-group-text bg-primary text-white"><i
+                                                class="fab fa-facebook-f"></i></span>
+                                        {{
+                                        form.facebook.label(class="form-label d-none")
+                                        }}
+                                        {% if form.facebook.errors %}
+                                        {{
+                                        form.facebook(class="form-control is-invalid",
+                                        placeholder="Facebook Username") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.facebook.errors
+                                            %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        {{ form.facebook(class="form-control",
+                                        placeholder="Facebook Username") }}
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">Just the
+                                        username</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="input-group">
+                                        <span
+                                            class="input-group-text bg-primary text-white"><i
+                                                class="fab fa-instagram"></i></span>
+                                        {{
+                                        form.instagram.label(class="form-label d-none")
+                                        }}
+                                        {% if form.instagram.errors %}
+                                        {{
+                                        form.instagram(class="form-control is-invalid",
+                                        placeholder="Instagram Username") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in
+                                            form.instagram.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        {{ form.instagram(class="form-control",
+                                        placeholder="Instagram Username") }}
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">Just the username,
+                                        without @ symbol</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="input-group">
+                                        <span
+                                            class="input-group-text bg-primary text-white"><i
+                                                class="fab fa-linkedin-in"></i></span>
+                                        {{
+                                        form.linkedin.label(class="form-label d-none")
+                                        }}
+                                        {% if form.linkedin.errors %}
+                                        {{
+                                        form.linkedin(class="form-control is-invalid",
+                                        placeholder="LinkedIn Username") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.linkedin.errors
+                                            %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        {{ form.linkedin(class="form-control",
+                                        placeholder="LinkedIn Username") }}
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">Just the
+                                        username</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-group mb-3">
                         {{ form.image.label(class="form-label") }}
                         <div class="input-group">
                             {{ form.image(class="form-control") }}
                         </div>
                         {% if form.image.errors %}
-                            <div class="text-danger">
-                                {% for error in form.image.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
+                        <div class="text-danger">
+                            {% for error in form.image.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
                         {% endif %}
-                        <small class="text-muted">Upload a high-quality profile picture (JPG, PNG only)</small>
+                        <small class="text-muted">Upload a high-quality profile
+                            picture (JPG, PNG only)</small>
                     </div>
-                    
+
                     <div class="form-check mb-4">
                         {{ form.is_active(class="form-check-input") }}
                         {{ form.is_active.label(class="form-check-label") }}
-                        <small class="d-block text-muted">If checked, this will become the active personality on the website.</small>
+                        <small class="d-block text-muted">If checked, this will
+                            become the active personality on the
+                            website.</small>
                     </div>
-                    
+
                     <div class="form-actions">
-                        <a href="{{ url_for('editor.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        <a href="{{ url_for('editor.dashboard') }}"
+                            class="btn btn-secondary">Cancel</a>
                         {{ form.submit(class="btn btn-primary") }}
                     </div>
                 </form>
@@ -159,7 +284,8 @@
 <!-- Include jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- Include summernote JS -->
-<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
 
 <script>
     $(document).ready(function() {

@@ -1,7 +1,8 @@
 {% extends "layout.html" %}
 {% from "macros/image_helper.html" import render_image %}
 
-{% block title %}{{ personality.name }} - Personality of the Week | HESA KNUST{% endblock %}
+{% block title %}{{ personality.name }} - Personality of the Week | HESA KNUST{%
+endblock %}
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/potw.css') }}">
@@ -33,20 +34,22 @@
                     <div class="potw-image-wrapper">
                         <!-- Enlarged image container -->
                         <div class="potw-image-container" id="imageContainer">
-                            {{ render_image(personality.image_file, 'potw_pics/', 'img/default_potw.jpg', personality.name, 'potw-image') }}
+                            {{ render_image(personality.image_file,
+                            'potw_pics/', 'img/default_potw.jpg',
+                            personality.name, 'potw-image') }}
                             <div class="image-overlay">
                                 <i class="fas fa-search-plus"></i>
                                 <span>Click to view</span>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="potw-profile-info">
                         <div class="potw-name-wrapper">
                             <h1 class="potw-name">{{ personality.name }}</h1>
                             <h2 class="potw-title">{{ personality.title }}</h2>
                         </div>
-                        
+
                         <div class="potw-meta">
                             <div class="potw-meta-item">
                                 <i class="fas fa-graduation-cap"></i>
@@ -61,7 +64,7 @@
                                 <span>{{ personality.high_school }}</span>
                             </div>
                         </div>
-                        
+
                         {% if personality.quote %}
                         <div class="potw-quote">
                             <div class="quote-icon-container">
@@ -70,28 +73,55 @@
                             <blockquote>{{ personality.quote }}</blockquote>
                         </div>
                         {% endif %}
-                        
-                        <!-- Social Share Buttons - Moved to header -->
-                        <div class="header-social-share">
-                            <span class="share-label">Share Profile:</span>
-                            <div class="social-buttons">
-                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" class="social-button facebook" aria-label="Share on Facebook">
-                                    <i class="fab fa-facebook-f"></i>
-                                </a>
-                                <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text=Meet {{ personality.name }}, HESA KNUST Personality of the Week" target="_blank" class="social-button twitter" aria-label="Share on Twitter">
+                        <!-- Social Media Links (replaces share buttons) -->
+                        {% if personality.twitter or personality.facebook or
+                        personality.instagram or personality.linkedin %}
+                        <div class="potw-socials mt-3">
+                            <h5>Connect with {{ personality.name.split()[0]
+                                }}</h5>
+                            <div class="social-links">
+                                {% if personality.twitter %}
+                                <a
+                                    href="https://twitter.com/{{ personality.twitter }}"
+                                    target="_blank"
+                                    class="social-button twitter">
                                     <i class="fab fa-twitter"></i>
                                 </a>
-                                <a href="https://api.whatsapp.com/send?text=Meet {{ personality.name }}, HESA KNUST Personality of the Week: {{ request.url }}" target="_blank" class="social-button whatsapp" aria-label="Share on WhatsApp">
-                                    <i class="fab fa-whatsapp"></i>
+                                {% endif %}
+
+                                {% if personality.facebook %}
+                                <a
+                                    href="https://facebook.com/{{ personality.facebook }}"
+                                    target="_blank"
+                                    class="social-button facebook">
+                                    <i class="fab fa-facebook-f"></i>
                                 </a>
-                                <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url }}&title=HESA Personality of the Week - {{ personality.name }}" target="_blank" class="social-button linkedin" aria-label="Share on LinkedIn">
+                                {% endif %}
+
+                                {% if personality.instagram %}
+                                <a
+                                    href="https://instagram.com/{{ personality.instagram }}"
+                                    target="_blank"
+                                    class="social-button instagram">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                {% endif %}
+
+                                {% if personality.linkedin %}
+                                <a
+                                    href="https://linkedin.com/in/{{ personality.linkedin }}"
+                                    target="_blank"
+                                    class="social-button linkedin">
                                     <i class="fab fa-linkedin-in"></i>
                                 </a>
+                                {% endif %}
                             </div>
                         </div>
+                        {% endif %}
+
                     </div>
                 </div>
-                
+
                 <!-- Tab Navigation -->
                 <div class="potw-tabs">
                     <div class="tab-navigation">
@@ -105,10 +135,11 @@
                         </button>
                         <button class="tab-button" data-tab="comments">
                             <i class="fas fa-comments"></i>
-                            Comments <span class="comment-count">{{ comments|length }}</span>
+                            Comments <span class="comment-count">{{
+                                comments|length }}</span>
                         </button>
                     </div>
-                    
+
                     <!-- Tab Content -->
                     <div class="tab-content">
                         <!-- Biography Tab -->
@@ -120,11 +151,12 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Education Tab -->
                         <div class="tab-pane" id="education-tab">
                             <div class="potw-education">
-                                <h3 class="potw-section-title">Educational Background</h3>
+                                <h3 class="potw-section-title">Educational
+                                    Background</h3>
                                 <div class="education-timeline">
                                     <div class="education-item">
                                         <div class="education-icon">
@@ -132,71 +164,92 @@
                                         </div>
                                         <div class="education-details">
                                             <h4>{{ personality.school }}</h4>
-                                            <div class="education-date">Present</div>
-                                            <p>KNUST - {{ personality.year }}</p>
+                                            <div
+                                                class="education-date">Present</div>
+                                            <p>KNUST - {{ personality.year
+                                                }}</p>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="education-item">
                                         <div class="education-icon">
                                             <i class="fas fa-school"></i>
                                         </div>
                                         <div class="education-details">
-                                            <h4>{{ personality.high_school }}</h4>
-                                            <div class="education-date">Completed</div>
+                                            <h4>{{ personality.high_school
+                                                }}</h4>
+                                            <div
+                                                class="education-date">Completed</div>
                                             <p>High School Education</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Comments Tab -->
                         <div class="tab-pane" id="comments-tab">
                             <div class="potw-comments" id="comments">
                                 <h3 class="potw-section-title">
-                                    Comments 
-                                    <span class="tab-comment-count">{{ comments|length }}</span>
+                                    Comments
+                                    <span class="tab-comment-count">{{
+                                        comments|length }}</span>
                                 </h3>
-                                
+
                                 <div class="comment-form-wrapper">
                                     <h4>Leave a Comment</h4>
-                                    <form class="potw-comment-form" method="POST" action="{{ url_for('main.potw_comment') }}">
+                                    <form class="potw-comment-form"
+                                        method="POST"
+                                        action="{{ url_for('main.potw_comment') }}">
                                         {{ form.hidden_tag() }}
                                         <div class="form-group">
-                                            {{ form.author_name(class="form-control", placeholder="Your name") }}
+                                            {{
+                                            form.author_name(class="form-control",
+                                            placeholder="Your name") }}
                                             {% if form.author_name.errors %}
-                                                {% for error in form.author_name.errors %}
-                                                    <span class="text-danger">{{ error }}</span>
-                                                {% endfor %}
+                                            {% for error in
+                                            form.author_name.errors %}
+                                            <span class="text-danger">{{ error
+                                                }}</span>
+                                            {% endfor %}
                                             {% endif %}
                                         </div>
                                         <div class="form-group">
-                                            {{ form.content(class="form-control", placeholder="Add a comment...", rows="4") }}
+                                            {{
+                                            form.content(class="form-control",
+                                            placeholder="Add a comment...",
+                                            rows="4") }}
                                             {% if form.content.errors %}
-                                                {% for error in form.content.errors %}
-                                                    <span class="text-danger">{{ error }}</span>
-                                                {% endfor %}
+                                            {% for error in form.content.errors
+                                            %}
+                                            <span class="text-danger">{{ error
+                                                }}</span>
+                                            {% endfor %}
                                             {% endif %}
                                         </div>
-                                        <button type="submit" class="potw-submit-btn">
-                                            <i class="fas fa-paper-plane"></i> Post Comment
+                                        <button type="submit"
+                                            class="potw-submit-btn">
+                                            <i class="fas fa-paper-plane"></i>
+                                            Post Comment
                                         </button>
                                     </form>
                                 </div>
-                                
+
                                 <div class="comments-list">
                                     {% for comment in comments %}
                                     <div class="comment-item">
                                         <div class="comment-avatar">
                                             <div class="avatar-placeholder">
-                                                {{ comment.author_name[:1]|upper }}
+                                                {{ comment.author_name[:1]|upper
+                                                }}
                                             </div>
                                         </div>
                                         <div class="comment-body">
                                             <div class="comment-header">
-                                                <span class="comment-author">{{ comment.author_name }}</span>
-                                                <span class="comment-date">{{ comment.date_posted.strftime('%b %d, %Y at %H:%M') }}</span>
+                                                <span class="comment-author">{{
+                                                    comment.author_name
+                                                    }}</span>
+                                                <!-- <span class="comment-date">{{ comment.date_posted.strftime('%b %d, %Y at %H:%M') }}</span> -->
                                             </div>
                                             <div class="comment-text">
                                                 {{ comment.content }}
@@ -208,7 +261,8 @@
                                         <div class="no-comments-icon">
                                             <i class="far fa-comment-dots"></i>
                                         </div>
-                                        <p>No comments yet. Be the first to share your thoughts!</p>
+                                        <p>No comments yet. Be the first to
+                                            share your thoughts!</p>
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -225,7 +279,7 @@
 <div id="imageModal" class="image-modal">
     <span class="close-modal">&times;</span>
     <div class="modal-content">
-        <img id="modalImage" src="" alt="Enlarged Image">
+        <img id="modalImage" src alt="Enlarged Image">
         <div class="modal-caption">{{ personality.name }}</div>
     </div>
 </div>

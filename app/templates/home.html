@@ -880,7 +880,7 @@
       {% for post in health_posts[:3] %}
       <div class="feature-card">
         <div class="feature-img">
-          {{ render_image(post.image_file, 'blog_pics/', 'img/default_health.jpg', post.title) }}
+          {{ render_image(post.image_file, 'blog_pics/', 'default_health.jpeg', post.title) }}
         </div>
         <div class="feature-content">
           <h3 class="feature-title">{{ post.title }}</h3>
@@ -892,7 +892,7 @@
       <!-- Fallback content if no health posts are found -->
       <div class="feature-card">
         <div class="feature-img">
-          <img src="{{ url_for('static', filename='img/awareness1.jpg') }}" alt="Mental Health Awareness">
+          <img src="{{ url_for('static', filename='blog_pics/default_health.jpeg') }}" alt="Mental Health Awareness">
         </div>
         <div class="feature-content">
           <h3 class="feature-title">Mental Health Awareness</h3>
@@ -903,7 +903,7 @@
       
       <div class="feature-card">
         <div class="feature-img">
-          <img src="{{ url_for('static', filename='img/awareness2.jpg') }}" alt="Preventive Healthcare">
+          <img src="{{ url_for('static', filename='blog_pics/default_health.jpeg') }}" alt="Preventive Healthcare">
         </div>
         <div class="feature-content">
           <h3 class="feature-title">Preventive Healthcare</h3>
@@ -914,7 +914,7 @@
       
       <div class="feature-card">
         <div class="feature-img">
-          <img src="{{ url_for('static', filename='img/awareness3.jpg') }}" alt="Nutrition & Wellness">
+          <img src="{{ url_for('static', filename='blog_pics/default_health.jpeg') }}" alt="Nutrition & Wellness">
         </div>
         <div class="feature-content">
           <h3 class="feature-title">Nutrition & Wellness</h3>
@@ -997,7 +997,7 @@
       {% for post in blog_posts[:3] %}
       <article class="update-card">
         <div class="update-img">
-          {{ render_image(post.image_file, 'blog_pics/', 'img/default blog.jpeg', post.title) }}
+          {{ render_image(post.image_file, 'blog_pics/', 'default_blog.jpeg', post.title) }}
         </div>
         <div class="update-content">
           <div class="update-meta">

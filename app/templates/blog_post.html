@@ -11,7 +11,7 @@
 {% block content %}
 <!-- Hero Section -->
 <section class="hero">
-    {{ render_image(post.image_file, 'uploads/blog_pics/', 'img/default blog.jpeg', post.title, 'hero-image') }}
+    {{ render_image(post.image_file, 'blog_pics/', 'blog_pics/default_blog.jpeg', post.title, 'hero-image') }}
     <div class="hero-overlay"></div>
 </section>
 
@@ -189,11 +189,11 @@
                             <i class="far fa-user-circle"></i>
                             {% if comment.user %}
                                 {{ comment.user.username }}
-                            {% else %}
-                                Anonymous
+                            <!-- {% else %} -->
+                                <!-- Anonymous -->
                             {% endif %}
                         </span>
-                        <span class="comment-time">{{ comment.date_posted.strftime('%b %d, %Y at %H:%M') }}</span>
+                        <!-- <span class="comment-time">{{ comment.date_posted.strftime('%b %d, %Y at %H:%M') }}</span> -->
                     </div>
                     <p class="comment-content">{{ comment.content }}</p>
                 </div>

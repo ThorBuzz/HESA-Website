@@ -16,10 +16,10 @@ class Config:
     # SQLALCHEMY_DATABASE_URI = 'postgresql://fallingstarcampusmarket_owner:4LQ6xdtFAlNS@ep-morning-star-a8n2df7n.eastus2.azure.neon.tech/fallingstarcampusmarket?sslmode=require'
 
     # external render
-    # SQLALCHEMY_DATABASE_URI = 'postgresql://hesa_website_database_user:VKp5X370nKMVPIQMiLhaagCH3JA3KPDY@dpg-d0ehvu95pdvs73anp8hg-a.oregon-postgres.render.com/hesa_website_database'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://hesa_website_database_user:VKp5X370nKMVPIQMiLhaagCH3JA3KPDY@dpg-d0ehvu95pdvs73anp8hg-a.oregon-postgres.render.com/hesa_website_database'
 
     # internal render
-    SQLALCHEMY_DATABASE_URI = 'postgresql://hesa_website_database_user:VKp5X370nKMVPIQMiLhaagCH3JA3KPDY@dpg-d0ehvu95pdvs73anp8hg-a/hesa_website_database'
+    # SQLALCHEMY_DATABASE_URI = 'postgresql://hesa_website_database_user:VKp5X370nKMVPIQMiLhaagCH3JA3KPDY@dpg-d0ehvu95pdvs73anp8hg-a/hesa_website_database'
 
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import HiddenField, StringField, PasswordField, SubmitField, BooleanField, TextAreaField, SelectField, DateField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Optional
 from app.models import User
 
 class RegistrationForm(FlaskForm):
@@ -64,6 +64,11 @@ class PotwForm(FlaskForm):
     year = StringField('Current Year', validators=[Length(max=20)])
     high_school = StringField('High School', validators=[Length(max=100)])
     quote = StringField('Personal Quote', validators=[Length(max=200)])
+    # Add social media username fields
+    twitter = StringField('Twitter Username', validators=[Optional(), Length(max=50)])
+    facebook = StringField('Facebook Username', validators=[Optional(), Length(max=50)])
+    instagram = StringField('Instagram Username', validators=[Optional(), Length(max=50)])
+    linkedin = StringField('LinkedIn Username', validators=[Optional(), Length(max=50)])
     image = FileField('Profile Picture', validators=[FileAllowed(['jpg', 'png', 'jpeg']), DataRequired()])
     is_active = BooleanField('Set as Active Personality')
     submit = SubmitField('Submit')

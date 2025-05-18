@@ -2,8 +2,7 @@
 {% block title %}Photo Gallery - HESA KNUST{% endblock %}
 
 {% block styles %}
-<link rel="stylesheet"
-    href="{{ url_for('static', filename='css/gallery.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}">
 <style>
     /* Banner and header styles */
     .gallery-banner {
@@ -305,7 +304,7 @@
             margin-right: 5px;
         }
         
-        .save-btn {
+        .view-btn {
             padding: 6px 12px;
             font-size: 13px;
         }
@@ -436,7 +435,7 @@
         font-weight: 600;
     }
 
-    .save-btn {
+    .view-btn {
         background-color: var(--primary);
         color: white;
         padding: 10px 18px;
@@ -450,7 +449,7 @@
         gap: 5px;
     }
 
-    .save-btn:hover {
+    .view-btn:hover {
         background-color: #1d4ed8;
         transform: translateY(-2px);
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
@@ -524,219 +523,84 @@
         }
     }
     
-    /* Photo Modal Styles */
-    .gallery-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.9);
-        z-index: 1000;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        backdrop-filter: blur(5px);
-    }
-    
-    .gallery-modal.active {
-        display: flex;
-        opacity: 1;
-    }
-    
+    /* Bootstrap Modal Customization */
     .modal-content {
-        position: relative;
-        max-width: 90%;
-        max-height: 80vh;
-        margin: 0 auto;
-        text-align: center;
-        animation: zoomIn 0.3s ease;
+        border-radius: 16px;
+        border: none;
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
     }
     
-    .modal-image {
+    .modal-header {
+        border-bottom: none;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+    
+    .modal-body {
+        padding: 0;
+    }
+    
+    .modal-footer {
+        border-top: none;
+        padding: 15px 20px;
+        justify-content: space-between;
+    }
+    
+    .modal-img-container {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        text-align: center;
+        background-color: #000;
+    }
+    
+    .modal-img-container img {
         max-width: 100%;
-        max-height: 75vh;
-        border-radius: 8px;
-        box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+        max-height: 70vh;
         object-fit: contain;
     }
     
-    .modal-details {
-        color: white;
-        margin-top: 20px;
-        text-align: center;
-        max-width: 90%;
+    .modal-photo-info {
+        padding: 20px;
     }
     
     .modal-title {
-        font-size: 24px;
-        font-weight: bold;
+        font-weight: 700;
         margin-bottom: 10px;
     }
     
     .modal-description {
-        font-size: 16px;
+        color: #4b5563;
         margin-bottom: 10px;
-        opacity: 0.8;
     }
     
-    .modal-meta {
+    .modal-date {
+        color: #6b7280;
         font-size: 14px;
-        opacity: 0.6;
-    }
-    
-    .modal-close {
-        position: absolute;
-        top: -40px;
-        right: -10px;
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border: none;
-        font-size: 20px;
-        backdrop-filter: blur(5px);
-        transition: all 0.2s ease;
-    }
-    
-    .modal-close:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: scale(1.1);
-    }
-    
-    .modal-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border: none;
-        font-size: 24px;
-        backdrop-filter: blur(5px);
-        transition: all 0.2s ease;
-    }
-    
-    .modal-nav:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-50%) scale(1.1);
-    }
-    
-    .modal-prev {
-        left: 20px;
-    }
-    
-    .modal-next {
-        right: 20px;
     }
     
     .modal-actions {
         display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin-top: 20px;
+        gap: 10px;
     }
     
     .modal-action-btn {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 30px;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 10px;
-        backdrop-filter: blur(5px);
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 500;
         transition: all 0.2s ease;
     }
     
     .modal-action-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-3px);
-    }
-    
-    .modal-action-btn.like-btn.active {
-        background: rgba(225, 29, 72, 0.2);
+        transform: translateY(-2px);
     }
     
     .modal-action-btn.like-btn.active i {
         color: #e11d48;
-    }
-    
-    .modal-download {
-        background: var(--primary);
-    }
-    
-    .modal-download:hover {
-        background: #1d4ed8;
-    }
-    
-    @keyframes zoomIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .modal-content {
-            max-width: 95%;
-        }
-        
-        .modal-title {
-            font-size: 20px;
-        }
-        
-        .modal-description {
-            font-size: 14px;
-        }
-        
-        .modal-close {
-            top: -30px;
-            right: 0;
-            width: 35px;
-            height: 35px;
-            font-size: 18px;
-        }
-        
-        .modal-nav {
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
-        }
-        
-        .modal-prev {
-            left: 10px;
-        }
-        
-        .modal-next {
-            right: 10px;
-        }
-        
-        .modal-action-btn {
-            padding: 8px 15px;
-            font-size: 14px;
-        }
     }
 </style>
 {% endblock %}
@@ -803,11 +667,9 @@
                             <i class="fas fa-share-alt"></i>
                         </button>
                     </div>
-                    <a
-                        href="{{ url_for('static', filename='uploads/gallery/' + photo.image_file) if 'http' not in photo.image_file else photo.image_file }}"
-                        class="save-btn" download>
-                        <i class="fas fa-download"></i> Save
-                    </a>
+                    <button class="view-btn" data-id="{{ photo.id }}">
+                        <i class="fas fa-eye"></i> View
+                    </button>
                 </div>
             </div>
         </div>
@@ -830,40 +692,38 @@
     </a>
     {% endif %}
 
-    <!-- Image Modal -->
-    <div id="galleryModal" class="gallery-modal">
-        <div class="modal-content">
-            <button class="modal-close" id="modalClose">
-                <i class="fas fa-times"></i>
-            </button>
-            <button class="modal-nav modal-prev" id="modalPrev">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <img id="modalImage" class="modal-image" src alt>
-            <button class="modal-nav modal-next" id="modalNext">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-        <div class="modal-details">
-            <h3 id="modalTitle" class="modal-title"></h3>
-            <p id="modalDescription" class="modal-description"></p>
-            <p id="modalDate" class="modal-meta"></p>
-        </div>
-        <div class="modal-actions">
-            <button id="modalLike" class="modal-action-btn like-btn">
-                <i class="far fa-heart"></i>
-                <span>Like</span>
-                <span id="modalLikeCount">0</span>
-            </button>
-            <button id="modalShare" class="modal-action-btn">
-                <i class="fas fa-share-alt"></i>
-                <span>Share</span>
-            </button>
-            <a id="modalDownload" href download
-                class="modal-action-btn modal-download">
-                <i class="fas fa-download"></i>
-                <span>Download</span>
-            </a>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="photoModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-img-container">
+                        <img id="modalImage" src="" alt="" class="img-fluid">
+                    </div>
+                    <div class="modal-photo-info">
+                        <div id="modalDescription" class="modal-description"></div>
+                        <div id="modalDate" class="modal-date"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="modal-actions">
+                        <button id="modalLike" class="btn btn-outline-secondary modal-action-btn like-btn" data-id="">
+                            <i class="far fa-heart"></i>
+                            <span>Like</span>
+                            <span id="modalLikeCount">0</span>
+                        </button>
+                        <button id="modalShare" class="btn btn-outline-secondary modal-action-btn" data-id="">
+                            <i class="fas fa-share-alt"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -886,19 +746,15 @@
         // Detect if device is mobile
         const isMobile = window.matchMedia("(max-width: 768px)").matches;
         
-        // Modal functionality
-        const modal = document.getElementById('galleryModal');
+        // Bootstrap Modal functionality
+        const modal = new bootstrap.Modal(document.getElementById('photoModal'));
         const modalImage = document.getElementById('modalImage');
-        const modalTitle = document.getElementById('modalTitle');
+        const modalTitle = document.getElementById('photoModalLabel');
         const modalDescription = document.getElementById('modalDescription');
         const modalDate = document.getElementById('modalDate');
-        const modalClose = document.getElementById('modalClose');
-        const modalPrev = document.getElementById('modalPrev');
-        const modalNext = document.getElementById('modalNext');
         const modalLike = document.getElementById('modalLike');
         const modalLikeCount = document.getElementById('modalLikeCount');
         const modalShare = document.getElementById('modalShare');
-        const modalDownload = document.getElementById('modalDownload');
         
         let currentPhotoIndex = 0;
         const visiblePins = [];
@@ -928,7 +784,6 @@
             modalTitle.textContent = title;
             modalDescription.textContent = description;
             modalDate.textContent = date;
-            modalDownload.href = img.src;
             modalLikeCount.textContent = likeCount;
             modalLike.setAttribute('data-id', photoId);
             
@@ -946,181 +801,29 @@
             
             modalShare.setAttribute('data-id', photoId);
             
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
-            // Hide/show navigation buttons based on visible pins
-            modalPrev.style.display = currentPhotoIndex > 0 ? 'flex' : 'none';
-            modalNext.style.display = currentPhotoIndex < visiblePins.length - 1 ? 'flex' : 'none';
+            modal.show();
         }
-        
-        function closeModal() {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        
-        function navToPhoto(direction) {
-            const newIndex = currentPhotoIndex + direction;
-            if (newIndex >= 0 && newIndex < visiblePins.length) {
-                currentPhotoIndex = newIndex;
-                openModal(visiblePins[currentPhotoIndex]);
-            }
-        }
-        
-        // Handle pin click to open modal
-        pins.forEach(pin => {
-            pin.addEventListener('click', function(e) {
-                // Don't open modal if clicking on action buttons
-                // Don't open modal if clicking on action buttons
-                if (e.target.closest('.pin-btn') || e.target.closest('.save-btn')) {
-                    return;
-                }
-                
-                openModal(this);
-            });
-        });
-        
-        // Close modal when clicking close button or outside the modal content
-        modalClose.addEventListener('click', closeModal);
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
-        
-        // Handle keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            if (!modal.classList.contains('active')) return;
-            
-            if (e.key === 'Escape') {
-                closeModal();
-            } else if (e.key === 'ArrowLeft') {
-                navToPhoto(-1);
-            } else if (e.key === 'ArrowRight') {
-                navToPhoto(1);
-            }
-        });
-        
-        // Modal navigation buttons
-        modalPrev.addEventListener('click', function() {
-            navToPhoto(-1);
-        });
-        
-        modalNext.addEventListener('click', function() {
-            navToPhoto(1);
-        });
-        
-        // Handle modal likes
-        modalLike.addEventListener('click', function() {
-            const photoId = this.getAttribute('data-id');
-            const icon = this.querySelector('i');
-            
-            // Send AJAX request to update likes
-            fetch(`{{ url_for('gallery.like_photo', photo_id=0) }}`.replace('0', photoId), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token() }}'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update the modal UI
-                    modalLikeCount.textContent = data.likes;
-                    
-                    if (icon.classList.contains('far')) {
-                        icon.classList.remove('far');
-                        icon.classList.add('fas');
-                        icon.style.color = '#e11d48';
-                        modalLike.classList.add('active');
-                        
-                        // Add heart animation
-                        const heart = document.createElement('span');
-                        heart.innerHTML = '❤️';
-                        heart.style.position = 'absolute';
-                        heart.style.fontSize = '24px';
-                        heart.style.left = '50%';
-                        heart.style.top = '50%';
-                        heart.style.transform = 'translate(-50%, -50%)';
-                        heart.style.pointerEvents = 'none';
-                        heart.style.animation = 'flyUp 1s forwards';
-                        modalLike.appendChild(heart);
-                        
-                        setTimeout(() => {
-                            heart.remove();
-                        }, 1000);
-                    }
-                    
-                    // Also update the pin UI
-                    const pinLikeBtn = document.querySelector(`.pin[data-id="${photoId}"] .like-btn`);
-                    const pinIcon = pinLikeBtn.querySelector('i');
-                    const pinCount = pinLikeBtn.querySelector('.like-count');
-                    
-                    pinCount.textContent = data.likes;
-                    if (pinIcon.classList.contains('far')) {
-                        pinIcon.classList.remove('far');
-                        pinIcon.classList.add('fas');
-                        pinIcon.style.color = '#e11d48';
-                    }
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-        
-        // Handle modal sharing
-        modalShare.addEventListener('click', function() {
-            const photoId = this.getAttribute('data-id');
-            const url = window.location.origin + window.location.pathname + '?photo=' + photoId;
-            
-            // Check if Web Share API is available
-            if (navigator.share) {
-                navigator.share({
-                    title: 'HESA Gallery Photo',
-                    text: 'Check out this photo from HESA KNUST Gallery!',
-                    url: url
-                }).catch(console.error);
-            } else {
-                // Fallback - copy to clipboard
-                navigator.clipboard.writeText(url).then(() => {
-                    // Create a tooltip
-                    const tooltip = document.createElement('div');
-                    tooltip.textContent = 'Link copied!';
-                    tooltip.style.position = 'absolute';
-                    tooltip.style.bottom = '100%';
-                    tooltip.style.left = '50%';
-                    tooltip.style.transform = 'translateX(-50%)';
-                    tooltip.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                    tooltip.style.color = 'black';
-                    tooltip.style.padding = '5px 10px';
-                    tooltip.style.borderRadius = '4px';
-                    tooltip.style.fontSize = '12px';
-                    tooltip.style.whiteSpace = 'nowrap';
-                    tooltip.style.zIndex = '100';
-                    tooltip.style.animation = 'fadeInOut 2s forwards';
-                    
-                    modalShare.style.position = 'relative';
-                    modalShare.appendChild(tooltip);
-                    
-                    setTimeout(() => {
-                        tooltip.remove();
-                    }, 2000);
-                }).catch(err => {
-                    console.error('Could not copy link: ', err);
-                });
-            }
-        });
         
         // For mobile: handle touch events specifically
         if (isMobile) {
             // Simplified overlay handling for mobile
             pins.forEach(pin => {
-                const actionButtons = pin.querySelectorAll('.pin-btn, .save-btn');
+                const actionButtons = pin.querySelectorAll('.pin-btn, .view-btn');
                 actionButtons.forEach(btn => {
                     btn.addEventListener('click', e => e.stopPropagation());
                 });
             });
         }
+        
+        // Add click listeners to new View buttons
+        const viewButtons = document.querySelectorAll('.view-btn');
+        viewButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent pin expansion
+                const pin = this.closest('.pin');
+                openModal(pin);
+            });
+        });
         
         // Filter functionality with smooth transitions
         const filterButtons = document.querySelectorAll('.filter-btn');
@@ -1242,7 +945,8 @@
                         }
                         
                         // Update modal like button if open
-                        if (modal.classList.contains('active') && modalLike.getAttribute('data-id') === photoId) {
+                        if (document.getElementById('photoModal').classList.contains('show') && 
+                            modalLike.getAttribute('data-id') === photoId) {
                             modalLikeCount.textContent = data.likes;
                             const modalIcon = modalLike.querySelector('i');
                             
@@ -1265,6 +969,64 @@
                     button.classList.remove('animate__animated', 'animate__heartBeat');
                 });
             });
+        });
+        
+        // Modal like button functionality
+        modalLike.addEventListener('click', function() {
+            const photoId = this.getAttribute('data-id');
+            const icon = this.querySelector('i');
+            
+            // Send AJAX request to update likes
+            fetch(`{{ url_for('gallery.like_photo', photo_id=0) }}`.replace('0', photoId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the modal UI
+                    modalLikeCount.textContent = data.likes;
+                    
+                    if (icon.classList.contains('far')) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        icon.style.color = '#e11d48';
+                        modalLike.classList.add('active');
+                        
+                        // Add heart animation
+                        const heart = document.createElement('span');
+                        heart.innerHTML = '❤️';
+                        heart.style.position = 'absolute';
+                        heart.style.fontSize = '24px';
+                        heart.style.left = '50%';
+                        heart.style.top = '50%';
+                        heart.style.transform = 'translate(-50%, -50%)';
+                        heart.style.pointerEvents = 'none';
+                        heart.style.animation = 'flyUp 1s forwards';
+                        modalLike.appendChild(heart);
+                        
+                        setTimeout(() => {
+                            heart.remove();
+                        }, 1000);
+                    }
+                    
+                    // Also update the pin UI
+                    const pinLikeBtn = document.querySelector(`.pin[data-id="${photoId}"] .like-btn`);
+                    const pinIcon = pinLikeBtn.querySelector('i');
+                    const pinCount = pinLikeBtn.querySelector('.like-count');
+                    
+                    pinCount.textContent = data.likes;
+                    if (pinIcon.classList.contains('far')) {
+                        pinIcon.classList.remove('far');
+                        pinIcon.classList.add('fas');
+                        pinIcon.style.color = '#e11d48';
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
         });
         
         // Improved share functionality
@@ -1324,6 +1086,49 @@
             });
         });
         
+        // Modal share button functionality
+        modalShare.addEventListener('click', function() {
+            const photoId = this.getAttribute('data-id');
+            const url = window.location.origin + window.location.pathname + '?photo=' + photoId;
+            
+            // Check if Web Share API is available
+            if (navigator.share) {
+                navigator.share({
+                    title: 'HESA Gallery Photo',
+                    text: 'Check out this photo from HESA KNUST Gallery!',
+                    url: url
+                }).catch(console.error);
+            } else {
+                // Fallback - copy to clipboard
+                navigator.clipboard.writeText(url).then(() => {
+                    // Create a tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.textContent = 'Link copied!';
+                    tooltip.style.position = 'absolute';
+                    tooltip.style.bottom = '100%';
+                    tooltip.style.left = '50%';
+                    tooltip.style.transform = 'translateX(-50%)';
+                    tooltip.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                    tooltip.style.color = 'black';
+                    tooltip.style.padding = '5px 10px';
+                    tooltip.style.borderRadius = '4px';
+                    tooltip.style.fontSize = '12px';
+                    tooltip.style.whiteSpace = 'nowrap';
+                    tooltip.style.zIndex = '100';
+                    tooltip.style.animation = 'fadeInOut 2s forwards';
+                    
+                    this.style.position = 'relative';
+                    this.appendChild(tooltip);
+                    
+                    setTimeout(() => {
+                        tooltip.remove();
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Could not copy link: ', err);
+                });
+            }
+        });
+        
         // Check URL params to open specific photo on page load
         const urlParams = new URLSearchParams(window.location.search);
         const photoParam = urlParams.get('photo');
@@ -1362,4 +1167,4 @@
     `;
     document.head.appendChild(style);
 </script>
-{% endblock %}
+{% endblock %} 

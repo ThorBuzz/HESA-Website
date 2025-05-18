@@ -241,6 +241,11 @@ def new_potw():
             year=form.year.data,
             high_school=form.high_school.data,
             quote=form.quote.data,
+            # Add social media usernames
+            twitter=form.twitter.data,
+            facebook=form.facebook.data,
+            instagram=form.instagram.data,
+            linkedin=form.linkedin.data,
             image_file=image_file,
             is_active=True
         )
@@ -423,6 +428,11 @@ def edit_potw(potw_id):
         personality.year = form.year.data
         personality.high_school = form.high_school.data
         personality.quote = form.quote.data
+        # Update social media usernames
+        personality.twitter = form.twitter.data
+        personality.facebook = form.facebook.data
+        personality.instagram = form.instagram.data
+        personality.linkedin = form.linkedin.data
         personality.is_active = form.is_active.data
         
         # Update image if a new one is provided
@@ -448,10 +458,14 @@ def edit_potw(potw_id):
         form.year.data = personality.year
         form.high_school.data = personality.high_school
         form.quote.data = personality.quote
+        # Populate social media fields
+        form.twitter.data = personality.twitter
+        form.facebook.data = personality.facebook
+        form.instagram.data = personality.instagram
+        form.linkedin.data = personality.linkedin
         form.is_active.data = personality.is_active
     
     return render_template('edit_potw.html', form=form, personality=personality, title='Edit Personality')
-
 @editor.route('/event/edit/<int:event_id>', methods=['GET', 'POST'])
 @login_required
 def edit_event(event_id):
