@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+{% block title %}Edit Photo - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+<style>
+    .photo-preview {
+        max-width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .edit-form {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="editor-header mb-4">
+        <h1>Edit Photo</h1>
+        <p>Update photo details and settings</p>
+        <a href="{{ url_for('editor.manage_gallery') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Back to Gallery Management
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-5">
+            <img src="{{ url_for('static', filename='uploads/gallery/' + photo.image_file) if 'http' not in photo.image_file else photo.image_file }}" alt="{{ photo.title }}" class="photo-preview">
+            
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Current Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Title:</strong> {{ photo.title }}</p>
+                    <p><strong>Category:</strong> {{ photo.category_ref.name }}</p>
+                    <p><strong>Date Added:</strong> {{ photo.date_posted.strftime('%B %d, %Y') }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge {{ 'bg-success' if photo.is_active else 'bg-danger' }}">
+                            {{ 'Active' if photo.is_active else 'Inactive' }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-7">
+            <div class="edit-form">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                        {% if form.title.errors %}
+                            {% for error in form.title.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows=4) }}
+                        {% if form.description.errors %}
+                            {% for error in form.description.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.category.label(class="form-label") }}
+                        {{ form.category(class="form-select") }}
+                        {% if form.category.errors %}
+                            {% for error in form.category.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.image.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form.image(class="form-control") }}
+                            <span class="input-group-text"><i class="fas fa-image"></i></span>
+                        </div>
+                        <div class="form-text">Leave empty to keep the current image</div>
+                        {% if form.image.errors %}
+                            {% for error in form.image.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4 form-check form-switch">
+                        {{ form.is_active(class="form-check-input") }}
+                        {{ form.is_active.label(class="form-check-label") }}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <a href="{{ url_for('editor.manage_gallery') }}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

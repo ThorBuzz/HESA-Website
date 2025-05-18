@@ -4,122 +4,586 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Health and Allied Sciences KNUST</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .fullpage-wrapper {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: relative;
+            touch-action: none;
+        }
+
+        .section-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            will-change: transform;
+            transition: transform 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
+            transform: translateZ(0);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+
+        section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            perspective: 500px;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+
+        .nav {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            z-index: 1000;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-dot:hover, .nav-dot.active {
+            background: white;
+            transform: scale(1.5);
+        }
+
+        .content {
+            text-align: center;
+            color: white;
+            padding: 2rem;
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        section.active .content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Updated color schemes for each section */
+        section:nth-child(1) {
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6); /* Blue theme for bus tracking */
+        }
+        
+        section:nth-child(2) {
+            background: linear-gradient(45deg, #006400, #32CD32); /* Green theme */
+        }
+        
+        section:nth-child(3) {
+            background: linear-gradient(45deg, #7B2CBF, #9D4EDD); /* Purple theme for blog */
+        }
+
+        section:nth-child(4) {
+            background: linear-gradient(45deg, #FFA500, #FF4500); /* Red-orange for events */
+        }
+
+        section:nth-child(5) {
+            background: linear-gradient(45deg, #0077B6, #90E0EF); /* Blue-teal for personality */
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .floating-shapes div {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 15s infinite linear;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .shape1 { top: 20%; left: 20%; animation-delay: 0s; }
+        .shape2 { top: 80%; left: 40%; animation-delay: 2s; }
+        .shape3 { top: 40%; left: 60%; animation-delay: 4s; }
+        .shape4 { top: 60%; left: 80%; animation-delay: 6s; }
+
+        .shape1 { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+        .shape2 { clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); }
+        .shape3 { clip-path: circle(50% at 50% 50%); }
+        .shape4 { clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border: 2px solid white;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: white;
+            color: #333;
+            transform: translateY(-5px);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            z-index: 10;
+        }
+
+        .scroll-indicator::before {
+            content: '↓';
+            color: white;
+            font-size: 2rem;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg) translateZ(0);
+            }
+            25% {
+                transform: translate(100px, 100px) rotate(90deg) translateZ(0);
+            }
+            50% {
+                transform: translate(200px, 0) rotate(180deg) translateZ(0);
+            }
+            75% {
+                transform: translate(100px, -100px) rotate(270deg) translateZ(0);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg) translateZ(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0) translateX(-50%);
+            }
+            40% {
+                transform: translateY(-30px) translateX(-50%);
+            }
+            60% {
+                transform: translateY(-15px) translateX(-50%);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            p {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .btn {
+                display: block;
+                width: 80%;
+                margin: 1rem auto;
+            }
+        }
+    </style>
 </head>
 <body>
-    <nav class="nav">
-        <div class="nav-dot active"></div>
-        <div class="nav-dot"></div>
-        <div class="nav-dot"></div>
-        <div class="nav-dot"></div>
-    </nav>
+    <div class="fullpage-wrapper">
+        <nav class="nav">
+            <div class="nav-dot active" data-index="0"></div>
+            <div class="nav-dot" data-index="1"></div>
+            <div class="nav-dot" data-index="2"></div>
+            <div class="nav-dot" data-index="3"></div>
+            <div class="nav-dot" data-index="4"></div>
+        </nav>
 
-    <section id="section1">
-        <div class="floating-shapes">
-            <div class="shape1"></div>
-            <div class="shape2"></div>
-            <div class="shape3"></div>
-            <div class="shape4"></div>
-        </div>
-        <div class="content">
-            <h1>Welcome to Health and Allied Sciences KNUST</h1>
-            <p>The Future of health care training in Ghana and Beyond</p>
-            <a href="#section2" class="btn">Explore More</a>
-            <a href="{{ url_for('main.home') }}" class="btn">Enter Homepage</a>
-        </div>
-        <div class="scroll-indicator"></div>
-    </section>
+        <div class="section-container">
+            <section id="section1" class="active">
+                <div class="floating-shapes">
+                    <div class="shape1"></div>
+                    <div class="shape2"></div>
+                    <div class="shape3"></div>
+                    <div class="shape4"></div>
+                </div>
+                <div class="content">
+                    <h1>Welcome to College of Health and Allied Sciences KNUST</h1>
+                    <p>The Future of health care training in Ghana and Beyond</p>
+                    <a href="{{ url_for('main.home') }}" class="btn">Homepage</a>
+                    <a href="#" class="btn section-link" data-target="1">Explore More</a>
+                </div>
+                <div class="scroll-indicator"></div>
+            </section>
 
-    <section id="section2">
-        <div class="floating-shapes">
-            <div class="shape1"></div>
-            <div class="shape2"></div>
-            <div class="shape3"></div>
-            <div class="shape4"></div>
-        </div>
-        <div class="content">
-            <h1>Enter Our Blog Page</h1>
-            <p>Get UpToDate on the events surrounding your College</p>
-            <a href="#section3" class="btn">Continue Journey</a>
-            <a href="{{ url_for('blog.index') }}" class="btn">Visit Blog</a>
-        </div>
-        <div class="scroll-indicator"></div>
-    </section>
+            <section id="section2">
+                <div class="floating-shapes">
+                    <div class="shape1"></div>
+                    <div class="shape2"></div>
+                    <div class="shape3"></div>
+                    <div class="shape4"></div>
+                </div>
+                <div class="content">
+                    <h1>Bus Tracking</h1>
+                    <p>Never miss a shuttle again! Track campus buses in real-time and plan your commute effectively.</p>
+                    <a href="{{ url_for('main.map') }}" class="btn">Start Tracking</a>
+                    <a href="#" class="btn section-link" data-target="2">Continue Journey</a>
+                </div>
+                <div class="scroll-indicator"></div>
+            </section>
 
-    <section id="section3">
-        <div class="floating-shapes">
-            <div class="shape1"></div>
-            <div class="shape2"></div>
-            <div class="shape3"></div>
-            <div class="shape4"></div>
-        </div>
-        <div class="content">
-            <h1>Are You a Fresher, or new here?</h1>
-            <p>Register to gain access to features like voting and other roles</p>
-            <a href="#section4" class="btn">Next Section</a>
-            <a href="{{ url_for('auth.register') }}" class="btn">Sign Up Here</a>
-        </div>
-        <div class="scroll-indicator"></div>
-    </section>
+            <section id="section3">
+                <div class="floating-shapes">
+                    <div class="shape1"></div>
+                    <div class="shape2"></div>
+                    <div class="shape3"></div>
+                    <div class="shape4"></div>
+                </div>
+                <div class="content">
+                    <h1>College Blog</h1>
+                    <p>Stay updated with the latest news, events, and achievements from our college community</p>
+                    <a href="{{ url_for('blog.index') }}" class="btn">Visit Blog</a>
+                    <a href="#" class="btn section-link" data-target="3">Next Section</a>
+                </div>
+                <div class="scroll-indicator"></div>
+            </section>
 
-    <section id="section4">
-        <div class="floating-shapes">
-            <div class="shape1"></div>
-            <div class="shape2"></div>
-            <div class="shape3"></div>
-            <div class="shape4"></div>
+            <section id="section4">
+                <div class="floating-shapes">
+                    <div class="shape1"></div>
+                    <div class="shape2"></div>
+                    <div class="shape3"></div>
+                    <div class="shape4"></div>
+                </div>
+                <div class="content">
+                    <h1>Upcoming Events</h1>
+                    <p>Don't miss our exciting events, seminars, and workshops happening around campus</p>
+                    <a href="#" class="btn section-link" data-target="4">Next Section</a>
+                    <a href="{{ url_for('blog.index') }}" class="btn">View Events</a>
+                </div>
+                <div class="scroll-indicator"></div>
+            </section>
+
+            <section id="section5">
+                <div class="floating-shapes">
+                    <div class="shape1"></div>
+                    <div class="shape2"></div>
+                    <div class="shape3"></div>
+                    <div class="shape4"></div>
+                </div>
+                <div class="content">
+                    <h1>Personality of the Week</h1>
+                    <p>Meet outstanding members of our college community who are making a difference</p>
+                    <a href="#" class="btn section-link" data-target="0">Back to Top</a>
+                    <a href="{{ url_for('main.potw') }}" class="btn">Read More</a>
+                </div>
+            </section>
         </div>
-        <div class="content">
-            <h1>Get Started</h1>
-            <p>Begin your journey with our amazing platform</p>
-            <a href="#section1" class="btn">Back to Top</a>
-            <a href="{{ url_for('main.home') }}" class="btn">Enter Homepage</a>
-        </div>
-    </section>
+    </div>
 
     <script>
-        // Navigation dots functionality
-        const sections = document.querySelectorAll('section');
-        const navDots = document.querySelectorAll('.nav-dot');
-
-        window.addEventListener('scroll', () => {
-            let current = '';
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
-                if (scrollY >= (sectionTop - sectionHeight / 3)) {
-                    current = section.getAttribute('id');
-                }
-            });
-
-            navDots.forEach((dot, index) => {
-                dot.classList.remove('active');
-                if (index === Array.from(sections).findIndex(section => section.id === current)) {
-                    dot.classList.add('active');
-                }
-            });
-        });
-
-        // Smooth scroll for navigation
-        navDots.forEach((dot, index) => {
-            dot.addEventListener('click', () => {
-                window.scrollTo({
-                    top: sections[index].offsetTop,
-                    behavior: 'smooth'
-                });
+document.addEventListener('DOMContentLoaded', function() {
+    const sectionContainer = document.querySelector('.section-container');
+    const sections = document.querySelectorAll('section');
+    const navDots = document.querySelectorAll('.nav-dot');
+    const sectionLinks = document.querySelectorAll('.section-link');
+    
+    let currentIndex = 0;
+    let isScrolling = false;
+    let startY, lastY;
+    let startTime;
+    let animationFrame;
+    let scrollTimeout;
+    
+    // Set up section heights and positions
+    function setupSections() {
+        sections.forEach((section, index) => {
+            section.style.position = 'absolute';
+            section.style.top = `${index * 100}%`;
+            
+            // Keep animations running all the time
+            const shapes = section.querySelectorAll('.floating-shapes div');
+            shapes.forEach(shape => {
+                // Ensure animations remain active
+                shape.style.visibility = 'visible';
             });
         });
-
-        // Intersection Observer for scroll animations
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
+        goToSection(0, false);
+    }
+    
+    // Initialize
+    setupSections();
+    
+    // Function to navigate to a section
+    function goToSection(index, animate = true) {
+        clearTimeout(scrollTimeout);
+        
+        // Validate index
+        if (index < 0) index = 0;
+        if (index >= sections.length) index = sections.length - 1;
+        
+        if (currentIndex === index) {
+            // Just in case, ensure we're at the correct position
+            sectionContainer.style.transform = `translate3d(0, -${index * 100}%, 0)`;
+            return;
+        }
+        
+        isScrolling = true;
+        currentIndex = index;
+        
+        // Update nav dots
+        navDots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+        
+        // Update section classes
+        sections.forEach((section, i) => {
+            if (i === index) {
+                section.classList.add('active');
+                
+                // Ensure content fades in nicely
+                const content = section.querySelector('.content');
+                if (content) {
+                    content.style.opacity = '0';
+                    content.style.transform = 'translateY(20px)';
+                    
+                    // Small delay to allow for transform to start
+                    setTimeout(() => {
+                        content.style.opacity = '1';
+                        content.style.transform = 'translateY(0)';
+                    }, 300);
                 }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.content').forEach((el) => observer.observe(el));
+            } else {
+                // Don't remove active immediately for smoother transitions
+                setTimeout(() => {
+                    if (currentIndex !== i) {
+                        section.classList.remove('active');
+                    }
+                }, 600);
+            }
+        });
+        
+        // Transform container to position
+        if (animate) {
+            sectionContainer.style.transition = 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)';
+        } else {
+            sectionContainer.style.transition = 'none';
+        }
+        
+        // Use translate3d for hardware acceleration
+        sectionContainer.style.transform = `translate3d(0, -${index * 100}%, 0)`;
+        
+        // Reset scrolling flag after animation completes
+        scrollTimeout = setTimeout(() => {
+            isScrolling = false;
+        }, animate ? 650 : 0);
+    }
+    
+    // Handle wheel event for scrolling - strict one-section-at-a-time approach
+    let wheelTimeout = null;
+    
+    function handleWheel(e) {
+        e.preventDefault();
+        
+        // If we're already scrolling or have a pending wheel action, ignore this event
+        if (isScrolling || wheelTimeout !== null) return;
+        
+        // Set a timeout flag to ignore subsequent wheel events completely
+        wheelTimeout = setTimeout(() => {
+            wheelTimeout = null;
+        }, 1200); // Keep this longer than animation time to ensure complete animation
+        
+        // Only check the direction, not the strength of scroll
+        if (e.deltaY > 0) {
+            // Scroll down - one section only, no matter how strong
+            goToSection(currentIndex + 1);
+        } else {
+            // Scroll up - one section only, no matter how strong
+            goToSection(currentIndex - 1);
+        }
+    }
+    
+    // Handle keyboard navigation
+    function handleKeydown(e) {
+        if (isScrolling) return;
+        
+        if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            goToSection(currentIndex + 1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            goToSection(currentIndex - 1);
+        }
+    }
+    
+    // Touch handlers for mobile
+    function handleTouchStart(e) {
+        if (isScrolling) return;
+        
+        startY = lastY = e.touches[0].clientY;
+        startTime = Date.now();
+        
+        // Stop any transition during touch drag for better performance
+        sectionContainer.style.transition = 'none';
+        
+        // Cancel any ongoing animation
+        cancelAnimationFrame(animationFrame);
+    }
+    
+    function handleTouchMove(e) {
+        if (isScrolling) return;
+        
+        e.preventDefault();
+        lastY = e.touches[0].clientY;
+        
+        // Calculate how far we've moved as a percentage of screen height
+        const deltaY = startY - lastY;
+        const percentMoved = (deltaY / window.innerHeight) * 100;
+        
+        // Only apply transform if we're not at the edges, or if we are but trying to bounce back
+        if ((currentIndex > 0 || deltaY < 0) && (currentIndex < sections.length - 1 || deltaY > 0)) {
+            // Apply a resistance factor when at the edges
+            let transformValue = -currentIndex * 100;
+            
+            if ((currentIndex === 0 && deltaY < 0) || (currentIndex === sections.length - 1 && deltaY > 0)) {
+                // Add resistance at edges - only move 1/3 as far
+                transformValue -= percentMoved / 3;
+            } else {
+                transformValue -= percentMoved;
+            }
+            
+            // Use translate3d for hardware acceleration
+            sectionContainer.style.transform = `translate3d(0, ${transformValue}%, 0)`;
+        }
+    }
+    
+    function handleTouchEnd(e) {
+        if (isScrolling) return;
+        
+        // Re-enable transitions
+        sectionContainer.style.transition = 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)';
+        
+        const endY = e.changedTouches[0].clientY;
+        const deltaY = startY - endY;
+        
+        // Only consider direction, not strength - create a strict threshold behavior
+        if (Math.abs(deltaY) > 50) { // Small threshold to differentiate from tap/click
+            if (deltaY > 0) {
+                // Swipe up - go to next section (only 1 section)
+                goToSection(currentIndex + 1);
+            } else {
+                // Swipe down - go to previous section (only 1 section)
+                goToSection(currentIndex - 1);
+            }
+        } else {
+            // Not enough movement, snap back to current section
+            goToSection(currentIndex);
+        }
+    }
+    
+    // Event Listeners - direct reference to the function
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('keydown', handleKeydown);
+    
+    // Touch events for mobile
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
+    
+    // Navigation dots
+    navDots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            goToSection(index);
+        });
+    });
+    
+    // Section links
+    sectionLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetIndex = parseInt(link.getAttribute('data-target'));
+            goToSection(targetIndex);
+        });
+    });
+    
+    // Handle resizing
+    window.addEventListener('resize', () => {
+        // Immediately snap to current section without animation
+        goToSection(currentIndex, false);
+    });
+    
+    // Initialize the first section
+    sections[0].classList.add('active');
+    
+    // Preload and trigger animations for better performance
+    window.addEventListener('load', function() {
+        // Force a reflow on all sections to ensure animations are loaded
+        sections.forEach(section => {
+            section.style.display = 'none';
+            section.offsetHeight; // Force reflow
+            section.style.display = '';
+        });
+    });
+});
     </script>
 </body>
 </html>

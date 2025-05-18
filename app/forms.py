@@ -92,3 +92,17 @@ class HomeBannerForm(FlaskForm):
     image = FileField('Banner Image', validators=[FileAllowed(['jpg', 'png', 'jpeg'])])
     is_active = BooleanField('Active', default=True)
     order = HiddenField('Order')
+
+# Add to forms.py
+
+class GalleryCategoryForm(FlaskForm):
+    name = StringField('Category Name', validators=[DataRequired(), Length(max=50)])
+    submit = SubmitField('Add Category')
+
+class GalleryPhotoForm(FlaskForm):
+    title = StringField('Photo Title', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description')
+    category = SelectField('Category', coerce=int, validators=[DataRequired()])
+    image = FileField('Upload Photo', validators=[FileAllowed(['jpg', 'png', 'jpeg']), DataRequired()])
+    is_active = BooleanField('Active', default=True)
+    submit = SubmitField('Upload Photo')

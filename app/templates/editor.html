@@ -35,6 +35,10 @@
                         class="action-btn">
                         <i class="fas fa-calendar-plus"></i> New Event
                     </a>
+                    <a href="{{ url_for('editor.manage_gallery') }}"
+                        class="action-btn">
+                        <i class="fas fa-images"></i> Manage Gallery
+                    </a>
                     {% if current_user.role == 'admin' %}
                     <a href="{{ url_for('editor.update_bus') }}"
                         class="action-btn">

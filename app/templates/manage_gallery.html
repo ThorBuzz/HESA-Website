@@ -1,0 +1,594 @@
+{% extends "layout.html" %}
+{% block title %}Manage Gallery - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/editor.css') }}">
+<style>
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+    }
+    
+    .gallery-item {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .gallery-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .gallery-item img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .gallery-item-info {
+        padding: 15px;
+        background-color: #fff;
+    }
+    
+    .gallery-item-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+        font-size: 16px;
+    }
+    
+    .gallery-item-category {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+    
+    .gallery-item-date {
+        font-size: 12px;
+        color: #999;
+    }
+    
+    .gallery-item-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+    
+    .status-badge {
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .status-active {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-inactive {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .form-section {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .form-section h3 {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .sortable-handle {
+        cursor: move;
+        padding: 5px;
+        margin-right: 5px;
+        color: #6b7280;
+    }
+    
+    .drag-indicator {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: rgba(0,0,0,0.7);
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    
+    .gallery-item:hover .drag-indicator {
+        opacity: 1;
+    }
+    
+    .gallery-tabs {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="editor-header mb-4">
+        <h1>Manage Gallery</h1>
+        <p>Upload and organize photos for the HESA gallery</p>
+        <a href="{{ url_for('gallery.index') }}"
+            class="btn btn-outline-primary">
+            <i class="fas fa-eye"></i> View Gallery
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-section">
+                <h3>Upload New Photo</h3>
+                <form action="{{ url_for('editor.upload_photo') }}"
+                    method="POST" enctype="multipart/form-data">
+                    {{ photo_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ photo_form.title.label(class="form-label") }}
+                        {{ photo_form.title(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ photo_form.description.label(class="form-label") }}
+                        {{ photo_form.description(class="form-control", rows=3)
+                        }}
+                    </div>
+                    <div class="mb-3">
+                        {{ photo_form.category.label(class="form-label") }}
+                        {{ photo_form.category(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ photo_form.image.label(class="form-label") }}
+                        {{ photo_form.image(class="form-control") }}
+                    </div>
+                    <div class="mb-3 form-check">
+                        {{ photo_form.is_active(class="form-check-input") }}
+                        {{ photo_form.is_active.label(class="form-check-label")
+                        }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload Photo
+                    </button>
+                </form>
+            </div>
+
+            <div class="form-section">
+                <h3>Add New Category</h3>
+                <form action="{{ url_for('editor.add_gallery_category') }}"
+                    method="POST">
+                    {{ category_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ category_form.name.label(class="form-label") }}
+                        {{ category_form.name(class="form-control") }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-plus-circle"></i> Add Category
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <h4>Existing Categories</h4>
+                <ul class="list-group">
+                    {% for category in categories %}
+                    <li
+                        class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ category.name }}
+                        <span class="badge bg-primary rounded-pill">{{
+                            category.photos|length }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="gallery-tabs">
+                <ul class="nav nav-tabs" id="galleryTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="all-photos-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#all-photos" type="button"
+                            role="tab"
+                            aria-controls="all-photos" aria-selected="true">All
+                            Photos</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="active-photos-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#active-photos" type="button"
+                            role="tab"
+                            aria-controls="active-photos"
+                            aria-selected="false">Active Photos</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="inactive-photos-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#inactive-photos" type="button"
+                            role="tab"
+                            aria-controls="inactive-photos"
+                            aria-selected="false">Inactive Photos</button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tab-content" id="galleryTabsContent">
+                <div class="tab-pane fade show active" id="all-photos"
+                    role="tabpanel" aria-labelledby="all-photos-tab">
+                    <div class="gallery-grid" id="sortable-gallery">
+                        {% for photo in photos %}
+                        <div class="gallery-item" data-id="{{ photo.id }}"
+                            data-order="{{ photo.order }}">
+                            <div class="drag-indicator">
+                                <i class="fas fa-grip-lines"></i>
+                            </div>
+                            <img
+                                src="{{ url_for('static', filename='uploads/gallery/' + photo.image_file) if 'http' not in photo.image_file else photo.image_file }}"
+                                alt="{{ photo.title }}">
+                            <div class="gallery-item-info">
+                                <div class="gallery-item-title">{{ photo.title
+                                    }}</div>
+                                <div class="gallery-item-category">{{
+                                    photo.category_ref.name }}</div>
+                                <div class="gallery-item-date">{{
+                                    photo.date_posted.strftime('%b %d, %Y')
+                                    }}</div>
+                                <div class="gallery-item-actions">
+                                    <span
+                                        class="status-badge {{ 'status-active' if photo.is_active else 'status-inactive' }}">
+                                        {{ 'Active' if photo.is_active else
+                                        'Inactive' }}
+                                    </span>
+                                    <div>
+                                        <button
+                                            class="btn btn-sm btn-outline-primary toggle-status"
+                                            data-id="{{ photo.id }}"
+                                            data-status="{{ photo.is_active }}">
+                                            <i
+                                                class="fas {{ 'fa-eye-slash' if photo.is_active else 'fa-eye' }}"></i>
+                                        </button>
+                                        <a
+                                            href="{{ url_for('editor.edit_photo', photo_id=photo.id) }}"
+                                            class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deletePhotoModal"
+                                            data-id="{{ photo.id }}"
+                                            data-title="{{ photo.title }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-images fa-3x mb-3 text-muted"></i>
+                            <h4>No photos uploaded yet</h4>
+                            <p>Upload your first photo to get started</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="active-photos" role="tabpanel"
+                    aria-labelledby="active-photos-tab">
+                    <div class="gallery-grid">
+                        {% for photo in photos if photo.is_active %}
+                        <div class="gallery-item">
+                            <img
+                                src="{{ url_for('static', filename='uploads/gallery/' + photo.image_file) if 'http' not in photo.image_file else photo.image_file }}"
+                                alt="{{ photo.title }}">
+                            <div class="gallery-item-info">
+                                <div class="gallery-item-title">{{ photo.title
+                                    }}</div>
+                                <div class="gallery-item-category">{{
+                                    photo.category_ref.name }}</div>
+                                <div class="gallery-item-date">{{
+                                    photo.date_posted.strftime('%b %d, %Y')
+                                    }}</div>
+                                <div class="gallery-item-actions">
+                                    <span
+                                        class="status-badge status-active">Active</span>
+                                    <div>
+                                        <button
+                                            class="btn btn-sm btn-outline-primary toggle-status"
+                                            data-id="{{ photo.id }}"
+                                            data-status="true">
+                                            <i class="fas fa-eye-slash"></i>
+                                        </button>
+                                        <a
+                                            href="{{ url_for('editor.edit_photo', photo_id=photo.id) }}"
+                                            class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deletePhotoModal"
+                                            data-id="{{ photo.id }}"
+                                            data-title="{{ photo.title }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-12 text-center py-5">
+                            <i
+                                class="fas fa-eye-slash fa-3x mb-3 text-muted"></i>
+                            <h4>No active photos</h4>
+                            <p>Activate photos to display them in the
+                                gallery</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="inactive-photos" role="tabpanel"
+                    aria-labelledby="inactive-photos-tab">
+                    <div class="gallery-grid">
+                        {% for photo in photos if not photo.is_active %}
+                        <div class="gallery-item">
+                            <img
+                                src="{{ url_for('static', filename='uploads/gallery/' + photo.image_file) if 'http' not in photo.image_file else photo.image_file }}"
+                                alt="{{ photo.title }}">
+                            <div class="gallery-item-info">
+                                <div class="gallery-item-title">{{ photo.title
+                                    }}</div>
+                                <div class="gallery-item-category">{{
+                                    photo.category_ref.name }}</div>
+                                <div class="gallery-item-date">{{
+                                    photo.date_posted.strftime('%b %d, %Y')
+                                    }}</div>
+                                <div class="gallery-item-actions">
+                                    <span
+                                        class="status-badge status-inactive">Inactive</span>
+                                    <div>
+                                        <button
+                                            class="btn btn-sm btn-outline-primary toggle-status"
+                                            data-id="{{ photo.id }}"
+                                            data-status="false">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <a
+                                            href="{{ url_for('editor.edit_photo', photo_id=photo.id) }}"
+                                            class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deletePhotoModal"
+                                            data-id="{{ photo.id }}"
+                                            data-title="{{ photo.title }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-eye fa-3x mb-3 text-muted"></i>
+                            <h4>No inactive photos</h4>
+                            <p>All your photos are currently active</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Photo Modal -->
+<div class="modal fade" id="deletePhotoModal" tabindex="-1"
+    aria-labelledby="deletePhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deletePhotoModalLabel">Confirm
+                    Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the photo: <span
+                        id="photoTitle"></span>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                    data-bs-dismiss="modal">Cancel</button>
+                <form id="deletePhotoForm" method="POST">
+                    <input type="hidden" name="csrf_token"
+                        value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script
+    src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize sortable for gallery
+    const sortableGallery = document.getElementById('sortable-gallery');
+    if (sortableGallery) {
+        new Sortable(sortableGallery, {
+            animation: 150,
+            handle: '.drag-indicator',
+            ghostClass: 'sortable-ghost',
+            onEnd: function(evt) {
+                // Get all gallery items and their new order
+                const items = sortableGallery.querySelectorAll('.gallery-item');
+                const photosData = [];
+                
+                items.forEach((item, index) => {
+                    photosData.push({
+                        id: item.getAttribute('data-id'),
+                        order: index
+                    });
+                });
+                
+                // Send AJAX request to update order
+                fetch('{{ url_for("editor.update_photo_order") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ photos: photosData })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update data-order attributes with new values
+                        items.forEach((item, index) => {
+                            item.setAttribute('data-order', index);
+                        });
+                        
+                        // Show success notification
+                        const toast = document.createElement('div');
+                        toast.className = 'position-fixed bottom-0 end-0 p-3';
+                        toast.style.zIndex = 1050;
+                        toast.innerHTML = `
+                            <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <i class="fas fa-check-circle me-2"></i> Gallery order updated successfully
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(toast);
+                        
+                        const toastEl = toast.querySelector('.toast');
+                        const bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                        bsToast.show();
+                        
+                        // Remove toast after it's hidden
+                        toastEl.addEventListener('hidden.bs.toast', function() {
+                            toast.remove();
+                        });
+                    }
+                })
+                .catch(error => console.error('Error updating order:', error));
+            }
+        });
+    }
+    
+    // Toggle photo status
+    const toggleButtons = document.querySelectorAll('.toggle-status');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const photoId = this.getAttribute('data-id');
+            const currentStatus = this.getAttribute('data-status') === 'true';
+            
+            // Send AJAX request to toggle status
+            fetch(`{{ url_for('editor.toggle_photo', photo_id=0) }}`.replace('0', photoId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the UI
+                    const icon = this.querySelector('i');
+                    const statusBadge = this.closest('.gallery-item-actions').querySelector('.status-badge');
+                    
+                    if (data.is_active) {
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                        statusBadge.textContent = 'Active';
+                        statusBadge.classList.remove('status-inactive');
+                        statusBadge.classList.add('status-active');
+                        this.setAttribute('data-status', 'true');
+                    } else {
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                        statusBadge.textContent = 'Inactive';
+                        statusBadge.classList.remove('status-active');
+                        statusBadge.classList.add('status-inactive');
+                        this.setAttribute('data-status', 'false');
+                    }
+                    
+                    // Show toast notification
+                    const toast = document.createElement('div');
+                    toast.className = 'position-fixed bottom-0 end-0 p-3';
+                    toast.style.zIndex = 1050;
+                    toast.innerHTML = `
+                        <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    <i class="fas fa-check-circle me-2"></i> Photo ${data.is_active ? 'activated' : 'deactivated'} successfully
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(toast);
+                    
+                    const toastEl = toast.querySelector('.toast');
+                    const bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                    bsToast.show();
+                    
+                    // Remove toast after it's hidden
+                    toastEl.addEventListener('hidden.bs.toast', function() {
+                        toast.remove();
+                    });
+                }
+            })
+            .catch(error => console.error('Error toggling status:', error));
+        });
+    });
+    
+    // Delete photo modal
+    const deletePhotoModal = document.getElementById('deletePhotoModal');
+    if (deletePhotoModal) {
+        deletePhotoModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const photoId = button.getAttribute('data-id');
+            const photoTitle = button.getAttribute('data-title');
+            
+            const modalTitle = document.getElementById('photoTitle');
+            modalTitle.textContent = photoTitle;
+            
+            const form = document.getElementById('deletePhotoForm');
+            form.action = "{{ url_for('editor.delete_photo', photo_id=0) }}".replace('0', photoId);
+        });
+    }
+});
+</script>
+{% endblock %}

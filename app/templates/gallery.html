@@ -1,0 +1,1365 @@
+{% extends "layout.html" %}
+{% block title %}Photo Gallery - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/gallery.css') }}">
+<style>
+    /* Banner and header styles */
+    .gallery-banner {
+        position: relative;
+        background: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b);
+        overflow: hidden;
+        border-radius: 8px;
+        margin-bottom: 40px;
+        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .gallery-banner-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.15;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="25" y="25" width="50" height="50" fill="white" transform="rotate(45 50 50)"/></svg>');
+        background-size: 30px 30px;
+    }
+    
+    .gallery-banner-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 70% 30%, rgba(0,0,0,0), rgba(0,0,0,0.3));
+    }
+    
+    .gallery-banner-inner {
+        position: relative;
+        padding: 60px 30px;
+        color: white;
+        text-align: center;
+        z-index: 2;
+    }
+    
+    .gallery-icon {
+        display: inline-block;
+        width: 80px;
+        height: 80px;
+        line-height: 80px;
+        font-size: 32px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .gallery-title {
+        font-size: 3rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .gallery-subtitle {
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+        opacity: 0.9;
+        font-weight: 300;
+        letter-spacing: 0.5px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Search and filter area styling */
+    .gallery-controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+    
+/* Updated search bar styling */
+.search-bar {
+    flex-basis: 300px;
+    flex-grow: 1;
+    position: relative;
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+    background-color: #f9fafb;
+    border-radius: 30px;
+    border: 1px solid #e5e7eb;
+    padding: 0 5px 0 15px;
+    transition: all 0.3s ease;
+}
+
+.search-bar:focus-within {
+    background-color: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.search-icon {
+    color: #6b7280;
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 0;
+    border: none;
+    background-color: transparent;
+    font-size: 16px;
+    outline: none;
+}
+
+@media (max-width: 576px) {
+    .gallery-controls {
+        flex-direction: column;
+        padding: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .search-bar {
+        margin-right: 0;
+        margin-bottom: 12px;
+        width: 100%;
+        padding: 0 10px 0 12px;
+    }
+    
+    .search-icon {
+        font-size: 14px;
+    }
+    
+    .search-bar input {
+        padding: 10px 0;
+        font-size: 14px;
+    }
+}
+    .filters {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 5px;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        width: 100%;
+    }
+    
+    .filters::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .filter-btn {
+        padding: 8px 16px;
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        font-weight: 500;
+        color: var(--text-dark);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+    
+    .filter-btn:hover, .filter-btn.active {
+        background-color: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Gallery container styles */
+    .gallery-container {
+        columns: 5 240px;
+        column-gap: 16px;
+        width: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+        padding: 10px;
+        min-height: 80vh;
+    }
+    
+    @media (max-width: 1500px) {
+        .gallery-container {
+            columns: 4 240px;
+        }
+    }
+    
+    @media (max-width: 1200px) {
+        .gallery-container {
+            columns: 3 240px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .gallery-container {
+            columns: 2 180px;
+        }
+        
+        .gallery-title {
+            font-size: 2rem;
+        }
+        
+        .gallery-subtitle {
+            font-size: 1rem;
+        }
+        
+        .gallery-banner-inner {
+            padding: 40px 15px;
+        }
+        
+        .gallery-icon {
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            font-size: 24px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .gallery-container {
+            columns: 2 160px;
+            column-gap: 10px;
+            padding: 5px;
+        }
+        
+        .gallery-controls {
+            flex-direction: column;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .search-bar {
+            margin-right: 0;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+        
+        .filters {
+            width: 100%;
+            padding: 0;
+            margin-bottom: 5px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        
+        .gallery-title {
+            font-size: 1.8rem;
+        }
+        
+        .gallery-subtitle {
+            font-size: 0.9rem;
+        }
+        
+        .gallery-banner {
+            margin-bottom: 20px;
+        }
+        
+        .gallery-banner-inner {
+            padding: 30px 15px;
+        }
+        
+        .gallery-icon {
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .pin-overlay {
+            padding: 15px 12px 12px;
+        }
+        
+        .pin-title {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .pin-meta {
+            font-size: 11px;
+        }
+        
+        .pin-btn {
+            width: 32px;
+            height: 32px;
+            margin-right: 5px;
+        }
+        
+        .save-btn {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+    }
+
+    .pin {
+        break-inside: avoid;
+        margin-bottom: 16px;
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transform: scale(1);
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: fadeIn 0.5s ease forwards;
+        opacity: 0;
+        z-index: 1;
+        transform-origin: center;
+        will-change: transform, z-index, box-shadow, width;
+        outline: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .pin:hover, .pin:focus, .pin.active {
+        transform: scale(1.05);
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+        z-index: 10;
+    }
+    
+    /* Disable hover effects on mobile */
+    @media (max-width: 768px) {
+        .pin:hover, .pin:focus {
+            transform: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .gallery-container:has(.pin:hover) .pin:not(:hover),
+        .gallery-container:has(.pin:focus) .pin:not(:focus),
+        .gallery-container:has(.pin.active) .pin:not(.active) {
+            transform: none;
+            opacity: 1;
+        }
+        
+        /* Show overlay by default on mobile for better UX */
+        .pin-overlay {
+            opacity: 1;
+            transform: translateY(0);
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+        }
+    }
+    
+    .gallery-container:has(.pin:hover) .pin:not(:hover),
+    .gallery-container:has(.pin:focus) .pin:not(:focus),
+    .gallery-container:has(.pin.active) .pin:not(.active) {
+        transform: scale(0.98);
+        opacity: 0.8;
+    }
+
+    .pin img {
+        width: 100%;
+        display: block;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .pin-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+        padding: 25px 16px 16px;
+        color: white;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        border-bottom-left-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+
+    .pin:hover .pin-overlay, .pin:focus .pin-overlay {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .pin-title {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    .pin-meta {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+
+    .pin-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+
+    .pin-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        margin-right: 8px;
+    }
+
+    .pin-btn:hover {
+        background-color: #fff;
+        transform: scale(1.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .pin-btn .like-count {
+        margin-left: 4px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .save-btn {
+        background-color: var(--primary);
+        color: white;
+        padding: 10px 18px;
+        border-radius: 24px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .save-btn:hover {
+        background-color: #1d4ed8;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .gallery-empty {
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--text-light);
+        background-color: #f9fafb;
+        border-radius: 12px;
+        border: 2px dashed #e5e7eb;
+    }
+    
+    .gallery-empty i {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+        color: #a1a1aa;
+    }
+    
+    .gallery-empty h3 {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: var(--text-dark);
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .floating-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        border: none;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        z-index: 100;
+    }
+
+    .floating-btn:hover {
+        transform: scale(1.1) translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+    }
+    
+    @media (max-width: 768px) {
+        .floating-btn {
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+        }
+    }
+    
+    /* Photo Modal Styles */
+    .gallery-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        backdrop-filter: blur(5px);
+    }
+    
+    .gallery-modal.active {
+        display: flex;
+        opacity: 1;
+    }
+    
+    .modal-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 80vh;
+        margin: 0 auto;
+        text-align: center;
+        animation: zoomIn 0.3s ease;
+    }
+    
+    .modal-image {
+        max-width: 100%;
+        max-height: 75vh;
+        border-radius: 8px;
+        box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+        object-fit: contain;
+    }
+    
+    .modal-details {
+        color: white;
+        margin-top: 20px;
+        text-align: center;
+        max-width: 90%;
+    }
+    
+    .modal-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .modal-description {
+        font-size: 16px;
+        margin-bottom: 10px;
+        opacity: 0.8;
+    }
+    
+    .modal-meta {
+        font-size: 14px;
+        opacity: 0.6;
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: -40px;
+        right: -10px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+        font-size: 20px;
+        backdrop-filter: blur(5px);
+        transition: all 0.2s ease;
+    }
+    
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+    
+    .modal-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+        font-size: 24px;
+        backdrop-filter: blur(5px);
+        transition: all 0.2s ease;
+    }
+    
+    .modal-nav:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .modal-prev {
+        left: 20px;
+    }
+    
+    .modal-next {
+        right: 20px;
+    }
+    
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .modal-action-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        backdrop-filter: blur(5px);
+        transition: all 0.2s ease;
+    }
+    
+    .modal-action-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-3px);
+    }
+    
+    .modal-action-btn.like-btn.active {
+        background: rgba(225, 29, 72, 0.2);
+    }
+    
+    .modal-action-btn.like-btn.active i {
+        color: #e11d48;
+    }
+    
+    .modal-download {
+        background: var(--primary);
+    }
+    
+    .modal-download:hover {
+        background: #1d4ed8;
+    }
+    
+    @keyframes zoomIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .modal-content {
+            max-width: 95%;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+        }
+        
+        .modal-description {
+            font-size: 14px;
+        }
+        
+        .modal-close {
+            top: -30px;
+            right: 0;
+            width: 35px;
+            height: 35px;
+            font-size: 18px;
+        }
+        
+        .modal-nav {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+        }
+        
+        .modal-prev {
+            left: 10px;
+        }
+        
+        .modal-next {
+            right: 10px;
+        }
+        
+        .modal-action-btn {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Beautiful animated banner section -->
+    <div class="gallery-banner">
+        <div class="gallery-banner-bg"></div>
+        <div class="gallery-banner-overlay"></div>
+        <div class="gallery-banner-inner">
+            <div class="gallery-icon">
+                <i class="fas fa-camera"></i>
+            </div>
+            <h1 class="gallery-title">HESA Gallery</h1>
+            <p class="gallery-subtitle">Explore our collection of cherished
+                memories and campus moments</p>
+        </div>
+    </div>
+
+    <!-- Search and filter controls -->
+    <div class="gallery-controls">
+        <!-- Updated search bar HTML -->
+        <div class="search-bar">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="gallery-search"
+                placeholder="Search photos...">
+        </div>
+        <div class="filters">
+            <button class="filter-btn active" data-category="all">All</button>
+            {% for category in categories %}
+            <button class="filter-btn" data-category="{{ category.slug }}">{{
+                category.name }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Gallery grid -->
+    <div class="gallery-container" id="gallery">
+        {% if photos %}
+        {% for photo in photos %}
+        <div class="pin" data-category="{{ photo.category_ref.slug }}"
+            data-id="{{ photo.id }}" tabindex="0">
+            <img
+                src="{{ url_for('static', filename='uploads/gallery/' + photo.image_file) if 'http' not in photo.image_file else photo.image_file }}"
+                alt="{{ photo.title }}">
+            <div class="pin-overlay">
+                <div class="pin-title">{{ photo.title }}</div>
+                {% if photo.description %}
+                <div class="pin-description">{{ photo.description|truncate(60)
+                    }}</div>
+                {% endif %}
+                <div class="pin-meta">{{ photo.date_posted.strftime('%b %d, %Y')
+                    }}</div>
+                <div class="pin-actions">
+                    <div style="display: flex;">
+                        <button class="pin-btn like-btn"
+                            data-id="{{ photo.id }}">
+                            <i class="far fa-heart"></i>
+                            <span class="like-count">{{ photo.likes }}</span>
+                        </button>
+                        <button class="pin-btn share-btn"
+                            data-id="{{ photo.id }}">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                    <a
+                        href="{{ url_for('static', filename='uploads/gallery/' + photo.image_file) if 'http' not in photo.image_file else photo.image_file }}"
+                        class="save-btn" download>
+                        <i class="fas fa-download"></i> Save
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="gallery-empty">
+            <i class="fas fa-images"></i>
+            <h3>Our Gallery is Coming Soon</h3>
+            <p>We're curating beautiful moments to share with you. Check back
+                soon!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if current_user.is_authenticated and current_user.role in ['admin',
+    'editor'] %}
+    <a href="{{ url_for('editor.manage_gallery') }}" class="floating-btn"
+        title="Manage Gallery">
+        <i class="fas fa-cog"></i>
+    </a>
+    {% endif %}
+
+    <!-- Image Modal -->
+    <div id="galleryModal" class="gallery-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <button class="modal-nav modal-prev" id="modalPrev">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <img id="modalImage" class="modal-image" src alt>
+            <button class="modal-nav modal-next" id="modalNext">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="modal-details">
+            <h3 id="modalTitle" class="modal-title"></h3>
+            <p id="modalDescription" class="modal-description"></p>
+            <p id="modalDate" class="modal-meta"></p>
+        </div>
+        <div class="modal-actions">
+            <button id="modalLike" class="modal-action-btn like-btn">
+                <i class="far fa-heart"></i>
+                <span>Like</span>
+                <span id="modalLikeCount">0</span>
+            </button>
+            <button id="modalShare" class="modal-action-btn">
+                <i class="fas fa-share-alt"></i>
+                <span>Share</span>
+            </button>
+            <a id="modalDownload" href download
+                class="modal-action-btn modal-download">
+                <i class="fas fa-download"></i>
+                <span>Download</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize animation for pins with staggered delay
+        const pins = document.querySelectorAll('.pin');
+        pins.forEach((pin, index) => {
+            pin.style.animationDelay = `${index * 0.05}s`;
+            
+            // Add animation end listener
+            pin.addEventListener('animationend', function() {
+                this.style.opacity = '1';
+            });
+        });
+        
+        // Detect if device is mobile
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+        
+        // Modal functionality
+        const modal = document.getElementById('galleryModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalDate = document.getElementById('modalDate');
+        const modalClose = document.getElementById('modalClose');
+        const modalPrev = document.getElementById('modalPrev');
+        const modalNext = document.getElementById('modalNext');
+        const modalLike = document.getElementById('modalLike');
+        const modalLikeCount = document.getElementById('modalLikeCount');
+        const modalShare = document.getElementById('modalShare');
+        const modalDownload = document.getElementById('modalDownload');
+        
+        let currentPhotoIndex = 0;
+        const visiblePins = [];
+        
+        function updateVisiblePins() {
+            visiblePins.length = 0;
+            pins.forEach(pin => {
+                if (pin.style.display !== 'none') {
+                    visiblePins.push(pin);
+                }
+            });
+        }
+        
+        function openModal(pin) {
+            const img = pin.querySelector('img');
+            const title = pin.querySelector('.pin-title').textContent;
+            const description = pin.querySelector('.pin-description')?.textContent || '';
+            const date = pin.querySelector('.pin-meta').textContent;
+            const photoId = pin.getAttribute('data-id');
+            const likeCount = pin.querySelector('.like-count').textContent;
+            const isLiked = pin.querySelector('.like-btn i').classList.contains('fas');
+            
+            updateVisiblePins();
+            currentPhotoIndex = visiblePins.indexOf(pin);
+            
+            modalImage.src = img.src;
+            modalTitle.textContent = title;
+            modalDescription.textContent = description;
+            modalDate.textContent = date;
+            modalDownload.href = img.src;
+            modalLikeCount.textContent = likeCount;
+            modalLike.setAttribute('data-id', photoId);
+            
+            if (isLiked) {
+                modalLike.classList.add('active');
+                modalLike.querySelector('i').classList.remove('far');
+                modalLike.querySelector('i').classList.add('fas');
+                modalLike.querySelector('i').style.color = '#e11d48';
+            } else {
+                modalLike.classList.remove('active');
+                modalLike.querySelector('i').classList.remove('fas');
+                modalLike.querySelector('i').classList.add('far');
+                modalLike.querySelector('i').style.color = '';
+            }
+            
+            modalShare.setAttribute('data-id', photoId);
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Hide/show navigation buttons based on visible pins
+            modalPrev.style.display = currentPhotoIndex > 0 ? 'flex' : 'none';
+            modalNext.style.display = currentPhotoIndex < visiblePins.length - 1 ? 'flex' : 'none';
+        }
+        
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        function navToPhoto(direction) {
+            const newIndex = currentPhotoIndex + direction;
+            if (newIndex >= 0 && newIndex < visiblePins.length) {
+                currentPhotoIndex = newIndex;
+                openModal(visiblePins[currentPhotoIndex]);
+            }
+        }
+        
+        // Handle pin click to open modal
+        pins.forEach(pin => {
+            pin.addEventListener('click', function(e) {
+                // Don't open modal if clicking on action buttons
+                // Don't open modal if clicking on action buttons
+                if (e.target.closest('.pin-btn') || e.target.closest('.save-btn')) {
+                    return;
+                }
+                
+                openModal(this);
+            });
+        });
+        
+        // Close modal when clicking close button or outside the modal content
+        modalClose.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Handle keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (!modal.classList.contains('active')) return;
+            
+            if (e.key === 'Escape') {
+                closeModal();
+            } else if (e.key === 'ArrowLeft') {
+                navToPhoto(-1);
+            } else if (e.key === 'ArrowRight') {
+                navToPhoto(1);
+            }
+        });
+        
+        // Modal navigation buttons
+        modalPrev.addEventListener('click', function() {
+            navToPhoto(-1);
+        });
+        
+        modalNext.addEventListener('click', function() {
+            navToPhoto(1);
+        });
+        
+        // Handle modal likes
+        modalLike.addEventListener('click', function() {
+            const photoId = this.getAttribute('data-id');
+            const icon = this.querySelector('i');
+            
+            // Send AJAX request to update likes
+            fetch(`{{ url_for('gallery.like_photo', photo_id=0) }}`.replace('0', photoId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the modal UI
+                    modalLikeCount.textContent = data.likes;
+                    
+                    if (icon.classList.contains('far')) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        icon.style.color = '#e11d48';
+                        modalLike.classList.add('active');
+                        
+                        // Add heart animation
+                        const heart = document.createElement('span');
+                        heart.innerHTML = '❤️';
+                        heart.style.position = 'absolute';
+                        heart.style.fontSize = '24px';
+                        heart.style.left = '50%';
+                        heart.style.top = '50%';
+                        heart.style.transform = 'translate(-50%, -50%)';
+                        heart.style.pointerEvents = 'none';
+                        heart.style.animation = 'flyUp 1s forwards';
+                        modalLike.appendChild(heart);
+                        
+                        setTimeout(() => {
+                            heart.remove();
+                        }, 1000);
+                    }
+                    
+                    // Also update the pin UI
+                    const pinLikeBtn = document.querySelector(`.pin[data-id="${photoId}"] .like-btn`);
+                    const pinIcon = pinLikeBtn.querySelector('i');
+                    const pinCount = pinLikeBtn.querySelector('.like-count');
+                    
+                    pinCount.textContent = data.likes;
+                    if (pinIcon.classList.contains('far')) {
+                        pinIcon.classList.remove('far');
+                        pinIcon.classList.add('fas');
+                        pinIcon.style.color = '#e11d48';
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+        
+        // Handle modal sharing
+        modalShare.addEventListener('click', function() {
+            const photoId = this.getAttribute('data-id');
+            const url = window.location.origin + window.location.pathname + '?photo=' + photoId;
+            
+            // Check if Web Share API is available
+            if (navigator.share) {
+                navigator.share({
+                    title: 'HESA Gallery Photo',
+                    text: 'Check out this photo from HESA KNUST Gallery!',
+                    url: url
+                }).catch(console.error);
+            } else {
+                // Fallback - copy to clipboard
+                navigator.clipboard.writeText(url).then(() => {
+                    // Create a tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.textContent = 'Link copied!';
+                    tooltip.style.position = 'absolute';
+                    tooltip.style.bottom = '100%';
+                    tooltip.style.left = '50%';
+                    tooltip.style.transform = 'translateX(-50%)';
+                    tooltip.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                    tooltip.style.color = 'black';
+                    tooltip.style.padding = '5px 10px';
+                    tooltip.style.borderRadius = '4px';
+                    tooltip.style.fontSize = '12px';
+                    tooltip.style.whiteSpace = 'nowrap';
+                    tooltip.style.zIndex = '100';
+                    tooltip.style.animation = 'fadeInOut 2s forwards';
+                    
+                    modalShare.style.position = 'relative';
+                    modalShare.appendChild(tooltip);
+                    
+                    setTimeout(() => {
+                        tooltip.remove();
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Could not copy link: ', err);
+                });
+            }
+        });
+        
+        // For mobile: handle touch events specifically
+        if (isMobile) {
+            // Simplified overlay handling for mobile
+            pins.forEach(pin => {
+                const actionButtons = pin.querySelectorAll('.pin-btn, .save-btn');
+                actionButtons.forEach(btn => {
+                    btn.addEventListener('click', e => e.stopPropagation());
+                });
+            });
+        }
+        
+        // Filter functionality with smooth transitions
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const gallery = document.getElementById('gallery');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const selectedCategory = this.getAttribute('data-category');
+                
+                // Filter the pins with animation
+                pins.forEach(pin => {
+                    if (selectedCategory === 'all' || pin.getAttribute('data-category') === selectedCategory) {
+                        pin.style.display = 'block';
+                        setTimeout(() => {
+                            pin.style.opacity = '1';
+                            pin.style.transform = 'scale(1)';
+                        }, 10);
+                    } else {
+                        pin.style.opacity = '0';
+                        pin.style.transform = 'scale(0.8)';
+                        setTimeout(() => {
+                            pin.style.display = 'none';
+                        }, 300);
+                    }
+                });
+                
+                // Update visible pins for modal navigation
+                updateVisiblePins();
+            });
+        });
+        
+        // Search functionality with debounce for performance
+        const searchInput = document.getElementById('gallery-search');
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            
+            searchTimeout = setTimeout(() => {
+                const searchTerm = this.value.toLowerCase();
+                
+                pins.forEach(pin => {
+                    const title = pin.querySelector('.pin-title').textContent.toLowerCase();
+                    const description = pin.querySelector('.pin-description')?.textContent.toLowerCase() || '';
+                    
+                    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                        pin.style.display = 'block';
+                        setTimeout(() => {
+                            pin.style.opacity = '1';
+                            pin.style.transform = 'scale(1)';
+                        }, 10);
+                    } else {
+                        pin.style.opacity = '0';
+                        pin.style.transform = 'scale(0.8)';
+                        setTimeout(() => {
+                            pin.style.display = 'none';
+                        }, 300);
+                    }
+                });
+                
+                // Update visible pins for modal navigation
+                updateVisiblePins();
+            }, 300);
+        });
+        
+        // Enhanced like functionality with animation
+        const likeButtons = document.querySelectorAll('.pin-btn.like-btn');
+        
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent pin expansion
+                const icon = this.querySelector('i');
+                const countElement = this.querySelector('.like-count');
+                const photoId = this.getAttribute('data-id');
+                
+                // Add quick animation
+                this.classList.add('animate__animated', 'animate__heartBeat');
+                
+                // Send AJAX request to update likes
+                fetch(`{{ url_for('gallery.like_photo', photo_id=0) }}`.replace('0', photoId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the UI
+                        countElement.textContent = data.likes;
+                        
+                        if (icon.classList.contains('far')) {
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                            icon.style.color = '#e11d48';
+                            
+                            // Add heart animation
+                            const heart = document.createElement('span');
+                            heart.innerHTML = '❤️';
+                            heart.style.position = 'absolute';
+                            heart.style.fontSize = '24px';
+                            heart.style.left = '50%';
+                            heart.style.top = '50%';
+                            heart.style.transform = 'translate(-50%, -50%)';
+                            heart.style.pointerEvents = 'none';
+                            heart.style.animation = 'flyUp 1s forwards';
+                            button.appendChild(heart);
+                            
+                            setTimeout(() => {
+                                heart.remove();
+                            }, 1000);
+                        }
+                        
+                        // Update modal like button if open
+                        if (modal.classList.contains('active') && modalLike.getAttribute('data-id') === photoId) {
+                            modalLikeCount.textContent = data.likes;
+                            const modalIcon = modalLike.querySelector('i');
+                            
+                            if (icon.classList.contains('fas')) {
+                                modalIcon.classList.remove('far');
+                                modalIcon.classList.add('fas');
+                                modalIcon.style.color = '#e11d48';
+                                modalLike.classList.add('active');
+                            }
+                        }
+                    }
+                    
+                    // Remove animation class
+                    setTimeout(() => {
+                        button.classList.remove('animate__animated', 'animate__heartBeat');
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    button.classList.remove('animate__animated', 'animate__heartBeat');
+                });
+            });
+        });
+        
+        // Improved share functionality
+        const shareButtons = document.querySelectorAll('.pin-btn.share-btn');
+        
+        shareButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent pin expansion
+                
+                const photoId = this.getAttribute('data-id');
+                const url = window.location.origin + window.location.pathname + '?photo=' + photoId;
+                
+                // Add quick animation
+                this.classList.add('animate__animated', 'animate__pulse');
+                
+                // Check if Web Share API is available
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'HESA Gallery Photo',
+                        text: 'Check out this photo from HESA KNUST Gallery!',
+                        url: url
+                    }).catch(console.error);
+                } else {
+                    // Fallback - copy to clipboard
+                    navigator.clipboard.writeText(url).then(() => {
+                        // Create a tooltip
+                        const tooltip = document.createElement('div');
+                        tooltip.textContent = 'Link copied!';
+                        tooltip.style.position = 'absolute';
+                        tooltip.style.bottom = '100%';
+                        tooltip.style.left = '50%';
+                        tooltip.style.transform = 'translateX(-50%)';
+                        tooltip.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                        tooltip.style.color = 'white';
+                        tooltip.style.padding = '5px 10px';
+                        tooltip.style.borderRadius = '4px';
+                        tooltip.style.fontSize = '12px';
+                        tooltip.style.whiteSpace = 'nowrap';
+                        tooltip.style.zIndex = '100';
+                        tooltip.style.animation = 'fadeInOut 2s forwards';
+                        
+                        button.style.position = 'relative';
+                        button.appendChild(tooltip);
+                        
+                        setTimeout(() => {
+                            tooltip.remove();
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Could not copy link: ', err);
+                    });
+                }
+                
+                // Remove animation class
+                setTimeout(() => {
+                    button.classList.remove('animate__animated', 'animate__pulse');
+                }, 1000);
+            });
+        });
+        
+        // Check URL params to open specific photo on page load
+        const urlParams = new URLSearchParams(window.location.search);
+        const photoParam = urlParams.get('photo');
+        
+        if (photoParam) {
+            const targetPin = document.querySelector(`.pin[data-id="${photoParam}"]`);
+            if (targetPin) {
+                // Wait for animations to complete
+                setTimeout(() => {
+                    openModal(targetPin);
+                }, 500);
+            }
+        }
+    });
+    
+    // Add keyframes for animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes flyUp {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -150%) scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(10px) translateX(-50%); }
+            20% { opacity: 1; transform: translateY(0) translateX(-50%); }
+            80% { opacity: 1; transform: translateY(0) translateX(-50%); }
+            100% { opacity: 0; transform: translateY(-10px) translateX(-50%); }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}

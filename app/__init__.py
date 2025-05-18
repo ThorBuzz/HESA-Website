@@ -32,7 +32,7 @@ def create_app(config_class=Config):
         return {'now': datetime.utcnow()}
     
     # Import and register blueprints
-    from app.routes import main, auth, blog, editor
+    from app.routes import main, auth, blog, editor, gallery
     from app.driver_routes import driver  # Import the new driver blueprint
     
     app.register_blueprint(main)
@@ -40,6 +40,7 @@ def create_app(config_class=Config):
     app.register_blueprint(blog)
     app.register_blueprint(editor)
     app.register_blueprint(driver)  # Register the driver blueprint
+    app.register_blueprint(gallery)
     
     # Create database tables if they don't exist
     with app.app_context():

@@ -1,0 +1,166 @@
+{% extends "layout.html" %}
+{% block title %}Upload Photo - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+<style>
+    .upload-form {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    
+    .upload-header {
+        margin-bottom: 30px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 15px;
+    }
+    
+    .upload-preview {
+        margin-top: 20px;
+        border: 2px dashed #e5e7eb;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .upload-preview img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 4px;
+        display: none;
+    }
+    
+    .preview-placeholder {
+        padding: 40px 20px;
+        color: #9ca3af;
+    }
+    
+    .preview-placeholder i {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="upload-form">
+        <div class="upload-header">
+            <h1>Upload Photo to Gallery</h1>
+            <p>Add a new photo to the HESA photo gallery</p>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.title.label(class="form-label") }}
+                {% if form.title.errors %}
+                    {{ form.title(class="form-control is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.title.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.title(class="form-control") }}
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {% if form.description.errors %}
+                    {{ form.description(class="form-control is-invalid", rows=4) }}
+                    <div class="invalid-feedback">
+                        {% for error in form.description.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.description(class="form-control", rows=4) }}
+                {% endif %}
+                <div class="form-text">Optional description for the photo.</div>
+            </div>
+            
+            <div class="mb-3">
+                {{ form.category.label(class="form-label") }}
+                {% if form.category.errors %}
+                    {{ form.category(class="form-select is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.category.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.category(class="form-select") }}
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.image.label(class="form-label") }}
+                {% if form.image.errors %}
+                    {{ form.image(class="form-control is-invalid", id="photo-upload") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.image.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.image(class="form-control", id="photo-upload") }}
+                {% endif %}
+                <div class="form-text">Supported formats: JPEG, PNG. Maximum size: 5MB.</div>
+            </div>
+            
+            <div class="upload-preview">
+                <div class="preview-placeholder" id="preview-placeholder">
+                    <i class="fas fa-image"></i>
+                    <p>Image preview will appear here</p>
+                </div>
+                <img id="image-preview" src="#" alt="Preview">
+            </div>
+            
+            <div class="mb-3 form-check mt-4">
+                {{ form.is_active(class="form-check-input") }}
+                {{ form.is_active.label(class="form-check-label") }}
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ url_for('gallery.manage') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Gallery
+                </a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const photoUpload = document.getElementById('photo-upload');
+        const imagePreview = document.getElementById('image-preview');
+        const previewPlaceholder = document.getElementById('preview-placeholder');
+        
+        photoUpload.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    previewPlaceholder.style.display = 'none';
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+</script>
+{% endblock %}

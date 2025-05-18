@@ -42,21 +42,17 @@
                                 class="nav-link">Blog</a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ url_for('main.potw') }}"
-                                class="nav-link">Personality</a>
-                        </li>
-                        <!-- <li class="nav-item">
-                            <a href="{{ url_for('main.sports') }}"
-                                class="nav-link">Sports</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ url_for('main.gallery') }}"
-                                class="nav-link">Gallery</a>
-                        </li> -->
-                        <li class="nav-item">
                             <a href="{{ url_for('main.map') }}"
                                 class="nav-link">Bus Tracker</a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('gallery.index') }}"
+                            class="nav-link">Gallery</a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a href="{{ url_for('main.potw') }}"
+                                class="nav-link">Personality</a>
+                        </li> -->
                         <!-- Add this right before the closing </ul> in the navigation menu -->
                         {% if current_user.is_authenticated and
                         current_user.role in ['admin', 'editor'] %}

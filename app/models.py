@@ -137,3 +137,33 @@ class HomeBanner(db.Model):
     
     def __repr__(self):
         return f"HomeBanner('{self.title}', order={self.order}, active={self.is_active})"
+    
+# Add to models.py
+
+class GalleryCategory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    slug = db.Column(db.String(50), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    photos = db.relationship('GalleryPhoto', backref='category_ref', lazy=True)
+    
+    def __repr__(self):
+        return f"GalleryCategory('{self.name}')"
+
+class GalleryPhoto(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    image_file = db.Column(db.String(256), nullable=False)
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+    order = db.Column(db.Integer, default=0)
+    likes = db.Column(db.Integer, default=0)
+    
+    # Foreign key
+    category_id = db.Column(db.Integer, db.ForeignKey('gallery_category.id'), nullable=False)
+    
+    def __repr__(self):
+        return f"GalleryPhoto('{self.title}', '{self.date_posted}')"
+    

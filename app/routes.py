@@ -1,9 +1,11 @@
 from flask import Blueprint, render_template, url_for, flash, redirect, request, jsonify, abort, current_app
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db
-from app.models import User, BlogPost, Comment, PersonalityOfTheWeek, PotwComment, Event, BusLocation, HomeBanner
+from app.models import (User, BlogPost, Comment, PersonalityOfTheWeek, 
+                        PotwComment, Event, BusLocation, HomeBanner, GalleryPhoto, GalleryCategory)
 from app.forms import (AssignBusForm, RegistrationForm, LoginForm, BlogPostForm, CommentForm, 
-                      PotwForm, PotwCommentForm, EventForm, BusLocationForm, HomeBannerForm)
+                      PotwForm, PotwCommentForm, EventForm, BusLocationForm, HomeBannerForm, GalleryCategoryForm, 
+                      GalleryPhotoForm)
 import os
 import secrets
 from PIL import Image
@@ -99,10 +101,10 @@ def potw_comment():
         flash('Your comment has been posted!', 'success')
     return redirect(url_for('main.potw'))
 
-@main.route('/gallery')
-def gallery():
-    # You'd need to implement a gallery model or use existing content
-    return render_template('gallery.html')
+# @main.route('/gallery')
+# def gallery():
+#     # You'd need to implement a gallery model or use existing content
+#     return render_template('gallery.html')
 
 @main.route('/sports')
 def sports():
@@ -721,3 +723,204 @@ def toggle_banner():
         return jsonify({'success': True})
     
     return jsonify({'success': False, 'error': 'Banner not found'}), 404
+
+
+gallery = Blueprint('gallery', __name__, url_prefix='/gallery')
+
+# Create a new blueprint for gallery
+gallery = Blueprint('gallery', __name__, url_prefix='/gallery')
+
+# Public gallery route
+@gallery.route('/')
+def index():
+    photos = GalleryPhoto.query.filter_by(is_active=True).order_by(GalleryPhoto.order, GalleryPhoto.date_posted.desc()).all()
+    categories = GalleryCategory.query.all()
+    return render_template('gallery.html', photos=photos, categories=categories)
+
+# Editor routes for gallery management
+@editor.route('/gallery/manage')
+@login_required
+def manage_gallery():
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    photos = GalleryPhoto.query.order_by(GalleryPhoto.order, GalleryPhoto.date_posted.desc()).all()
+    categories = GalleryCategory.query.all()
+    photo_form = GalleryPhotoForm()
+    photo_form.category.choices = [(c.id, c.name) for c in categories]
+    category_form = GalleryCategoryForm()
+    
+    return render_template('manage_gallery.html', 
+                          photos=photos, 
+                          categories=categories, 
+                          photo_form=photo_form, 
+                          category_form=category_form)
+
+@editor.route('/gallery/add_category', methods=['POST'])
+@login_required
+def add_gallery_category():
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    form = GalleryCategoryForm()
+    if form.validate_on_submit():
+        # Create slug from name
+        slug = form.name.data.lower().replace(' ', '-')
+        
+        # Check if slug already exists
+        existing = GalleryCategory.query.filter_by(slug=slug).first()
+        if existing:
+            flash('A category with this name already exists.', 'danger')
+        else:
+            category = GalleryCategory(name=form.name.data, slug=slug)
+            db.session.add(category)
+            db.session.commit()
+            flash('New gallery category added!', 'success')
+    
+    return redirect(url_for('editor.manage_gallery'))
+
+@editor.route('/gallery/upload', methods=['POST'])
+@login_required
+def upload_photo():
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    categories = GalleryCategory.query.all()
+    form = GalleryPhotoForm()
+    form.category.choices = [(c.id, c.name) for c in categories]
+    
+    if form.validate_on_submit():
+        if form.image.data:
+            image_file = save_image(form.image.data, 'uploads/gallery')
+            
+            # Get the highest order value
+            highest_order = db.session.query(db.func.max(GalleryPhoto.order)).scalar() or -1
+            
+            photo = GalleryPhoto(
+                title=form.title.data,
+                description=form.description.data,
+                image_file=image_file,
+                category_id=form.category.data,
+                is_active=form.is_active.data,
+                order=highest_order + 1
+            )
+            db.session.add(photo)
+            db.session.commit()
+            flash('Photo uploaded successfully!', 'success')
+        else:
+            flash('Please upload an image.', 'danger')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
+    
+    return redirect(url_for('editor.manage_gallery'))
+
+@editor.route('/gallery/edit/<int:photo_id>', methods=['GET', 'POST'])
+@login_required
+def edit_photo(photo_id):
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    photo = GalleryPhoto.query.get_or_404(photo_id)
+    categories = GalleryCategory.query.all()
+    
+    form = GalleryPhotoForm()
+    form.category.choices = [(c.id, c.name) for c in categories]
+    
+    if form.validate_on_submit():
+        photo.title = form.title.data
+        photo.description = form.description.data
+        photo.category_id = form.category.data
+        photo.is_active = form.is_active.data
+        
+        if form.image.data:
+            # Delete old image if applicable
+            if photo.image_file and 'http' in photo.image_file:
+                from app.utils.s3_helper import delete_file_from_s3
+                delete_file_from_s3(photo.image_file)
+            
+            # Save new image
+            photo.image_file = save_image(form.image.data, 'uploads/gallery')
+        
+        db.session.commit()
+        flash('Photo updated successfully!', 'success')
+        return redirect(url_for('editor.manage_gallery'))
+    
+    # Pre-populate form with existing data
+    elif request.method == 'GET':
+        form.title.data = photo.title
+        form.description.data = photo.description
+        form.category.data = photo.category_id
+        form.is_active.data = photo.is_active
+    
+    return render_template('edit_photo.html', form=form, photo=photo)
+
+@editor.route('/gallery/delete/<int:photo_id>', methods=['POST'])
+@login_required
+def delete_photo(photo_id):
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    photo = GalleryPhoto.query.get_or_404(photo_id)
+    
+    # Delete image from S3 if applicable
+    if photo.image_file and 'http' in photo.image_file:
+        from app.utils.s3_helper import delete_file_from_s3
+        delete_file_from_s3(photo.image_file)
+    
+    db.session.delete(photo)
+    
+    # Reorder remaining photos
+    remaining_photos = GalleryPhoto.query.order_by(GalleryPhoto.order).all()
+    for i, p in enumerate(remaining_photos):
+        p.order = i
+    
+    db.session.commit()
+    flash('Photo deleted successfully!', 'success')
+    return redirect(url_for('editor.manage_gallery'))
+
+@editor.route('/gallery/toggle/<int:photo_id>', methods=['POST'])
+@login_required
+def toggle_photo(photo_id):
+    if current_user.role not in ['admin', 'editor']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    photo = GalleryPhoto.query.get_or_404(photo_id)
+    photo.is_active = not photo.is_active
+    db.session.commit()
+    
+    return jsonify({
+        'success': True, 
+        'is_active': photo.is_active,
+        'message': f"Photo {'activated' if photo.is_active else 'deactivated'} successfully"
+    })
+
+@editor.route('/gallery/update_order', methods=['POST'])
+@login_required
+def update_photo_order():
+    if current_user.role not in ['admin', 'editor']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    photos_data = data.get('photos', [])
+    
+    for photo_data in photos_data:
+        photo_id = photo_data.get('id')
+        new_order = photo_data.get('order')
+        
+        photo = GalleryPhoto.query.get(photo_id)
+        if photo:
+            photo.order = new_order
+    
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+# API route for likes
+@gallery.route('/api/like/<int:photo_id>', methods=['POST'])
+def like_photo(photo_id):
+    photo = GalleryPhoto.query.get_or_404(photo_id)
+    photo.likes += 1
+    db.session.commit()
+    return jsonify({'success': True, 'likes': photo.likes})
