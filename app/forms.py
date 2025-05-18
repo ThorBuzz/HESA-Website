@@ -32,13 +32,22 @@ class BlogPostForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])
     excerpt = TextAreaField('Excerpt', validators=[DataRequired(), Length(max=200)])
     category = SelectField('Category', choices=[
-        ('news', 'News'), 
-        ('tutorial', 'Tutorial'), 
-        ('review', 'Review'),
-        ('event', 'Event'),
-        ('health', 'Health Awareness')
-        
-    ], validators=[DataRequired()])
+    ('news', 'News'),
+    ('tutorial', 'Tutorial'),
+    ('review', 'Review'),
+    ('health', 'Health Awareness'),
+    # ('event', 'Event'),
+    ('technology', 'Technology'),
+    ('lifestyle', 'Lifestyle'),
+    ('campus', 'Campus Life'),
+    ('announcement', 'Announcement'),
+    ('opinion', 'Opinion'),
+    ('interview', 'Interview'),
+    ('sports', 'Sports'),
+    ('arts', 'Arts & Culture'),
+    ('research', 'Research')
+    ], 
+    validators=[DataRequired()])
     image = FileField('Featured Image', validators=[FileAllowed(['jpg', 'png', 'jpeg'])])
     read_time = StringField('Estimated Read Time (minutes)', validators=[DataRequired()])
     submit = SubmitField('Submit Post')

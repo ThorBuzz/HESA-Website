@@ -59,7 +59,7 @@ a {
     height: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 10px;
+    padding: 0 0px;
 }
 
 .nav-img {
@@ -715,7 +715,7 @@ a {
     background-color: #1f2937;
     /* Dark background from original footer */
     padding: 2rem 0 1.5rem;
-    margin-top: 3rem;
+    /* margin-top: 3rem; */
     text-align: center;
     color: #fff;
 }

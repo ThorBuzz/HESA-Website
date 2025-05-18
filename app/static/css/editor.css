@@ -495,3 +495,25 @@
     border: 2px dashed #007bff;
     background-color: rgba(0, 123, 255, 0.1);
 }
+/* Add this to your editor.css file */
+@media (max-width: 767.98px) {
+  .nav-tabs {
+    border-bottom: none;
+  }
+  
+  .nav-tabs .nav-item {
+    margin-bottom: 5px;
+    width: 100%;
+  }
+  
+  .nav-tabs .nav-link {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+  }
+  
+  .nav-tabs .nav-link.active {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+  }
+}

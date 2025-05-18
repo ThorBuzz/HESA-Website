@@ -185,6 +185,15 @@
     display: inline-block;
   }
   
+  .section-title2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: 'white';
+    margin-bottom: 1rem;
+    position: relative;
+    display: inline-block;
+  }
+  
   .section-title::after {
     content: '';
     position: absolute;
@@ -978,15 +987,17 @@
 <section class="updates-section">
   <div class="container">
     <div class="section-heading">
-      <h2 class="section-title">Latest Updates</h2>
+      <h2 class="section-title">HESA Blog</h2>
       <p class="section-subtitle">Stay informed with the latest news and events from HESA</p>
     </div>
     
     <div class="updates-grid">
-      {% for post in posts %}
+      {% set blog_posts = posts | rejectattr('category', 'equalto', 'health') | rejectattr('category', 'equalto', 'event') | list %}
+
+      {% for post in blog_posts[:3] %}
       <article class="update-card">
         <div class="update-img">
-          {{ render_image(post.image_file, 'blog_pics/', 'img/default_blog.jpg', post.title) }}
+          {{ render_image(post.image_file, 'blog_pics/', 'img/default blog.jpeg', post.title) }}
         </div>
         <div class="update-content">
           <div class="update-meta">
@@ -1017,7 +1028,7 @@
 <section class="entertainment-section">
   <div class="container">
     <div class="section-heading">
-      <h2 class="section-title">Entertainment Hub</h2>
+      <h2 class="section-title2">Upcoming Events</h2>
       <!-- <p class="section-subtitle">Discover exciting events and activities for students</p> -->
     </div>
     
@@ -1053,7 +1064,6 @@
 <section class="potw-section">
   <div class="container">
     <div class="potw-container">
-    <h1>Personality of the Week</h1>
       <!-- Image Side -->
       <div class="potw-image">
         {% if potw %}
@@ -1065,6 +1075,7 @@
       
       <!-- Content Side -->
       <div class="potw-content">
+        <h2>Personality of the Week</h2>
         {% if potw %}
         <!-- <p>Meet our outstanding student who exemplifies academic excellence and community leadership</p> -->
         
@@ -1104,6 +1115,55 @@
         {% else %}
         <p>No personality featured this week. Check back soon to meet our next outstanding student!</p>
         {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Bus Tracker Preview Section (Now College Gallery) -->
+<section class="bus-tracker">
+  <div class="container">
+    <div class="bus-tracker-content">
+      <div class="bus-tracker-left">
+        <h2 class="bus-tracker-title">HESA Gallery</h2>
+        <p class="bus-tracker-description">Explore vibrant moments from campus life! Our gallery showcases events, achievements, and the spirit that makes our college unique.</p>
+        
+        <div class="bus-benefits">
+          <div class="benefit-item">
+            <div class="benefit-icon">
+              <i class="fas fa-camera-retro"></i>
+            </div>
+            <div>
+              <h3>Event Highlights</h3>
+              <!-- <p>Catch glimpses of memorable college events</p> -->
+            </div>
+          </div>
+          
+          <div class="benefit-item">
+            <div class="benefit-icon">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div>
+              <h3>Student Achievements</h3>
+              <!-- <p>See how our students are making a mark</p> -->
+            </div>
+          </div>
+          
+          <div class="benefit-item">
+            <div class="benefit-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div>
+              <h3>Campus Life</h3>
+              <!-- <p>Experience the vibrant college community</p> -->
+            </div>
+          </div>
+        </div>
+        
+        <a href="{{ url_for('gallery.index') }}" class="hero-cta">View Gallery</a>
+      </div>
+      
+      <div class="bus-tracker-right">
+        <img src="{{ url_for('static', filename='img/gallery (1).jpg') }}" alt="College Gallery Preview" class="bus-tracker-img">
       </div>
     </div>
   </div>

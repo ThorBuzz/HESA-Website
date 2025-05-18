@@ -36,47 +36,49 @@
         trackUserLocation: true
     }));
 
-    // Function to create a bus HTML popup content
-    function createPopupContent(bus) {
-        return `
-            <div class="popup-content">
-                <h5>${bus.id}</h5>
-                <p><strong>Route:</strong> ${bus.route}</p>
-                <p><strong>Status:</strong> ${bus.status}</p>
-                <p><strong>Last Update:</strong> ${bus.lastUpdate}</p>
-            </div>
-        `;
-    }
+// Function to create a bus HTML popup content
+function createPopupContent(bus) {
+    return `
+        <div class="popup-content">
+            <h5>${bus.id}</h5>
+            <!-- <p><strong>Route:</strong> ${bus.route}</p> -->
+            <p><strong>Status:</strong> ${bus.status}</p>
+            <!-- <p><strong>Last Update:</strong> ${bus.lastUpdate}</p> -->
+        </div>
+    `;
+}
+        // Function to create bus list item HTML
+        function createBusListItem(bus) {
+            const statusClass = bus.status === 'active' ? 'status-active' : 
+                            (bus.status === 'maintenance' ? 'status-maintenance' : 'status-inactive');
+            
+            // Determine if button should be disabled
+            const isDisabled = bus.status !== 'active' ? 'disabled' : '';
+            const buttonClass = bus.status !== 'active' ? 'track-button disabled-button' : 'track-button';
 
-    // Function to create bus list item HTML
-    function createBusListItem(bus) {
-        const statusClass = bus.status === 'active' ? 'status-active' : 
-                           (bus.status === 'maintenance' ? 'status-maintenance' : 'status-inactive');
-
-        return `
-            <div class="bus-info" data-bus-id="${bus.id}" id="bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}">
-                <h4>
-                    <i class="fas fa-bus"></i>
-                    ${bus.id}
-                    <span class="bus-status ${statusClass}">${bus.status}</span>
-                </h4>
-                <p class="bus-route">
-                    <i class="fas fa-route route-icon"></i>
-                    ${bus.route}
-                </p>
-                <p class="last-update">
-                    <i class="fas fa-clock"></i>
-                    Last seen: ${bus.lastUpdate}
-                </p>
-                <div class="bus-actions">
-                    <button class="track-button" onclick="centerOnBus('${bus.id}')">
-                        <i class="fas fa-crosshairs"></i> Track Bus
-                    </button>
+            return `
+                <div class="bus-info" data-bus-id="${bus.id}" id="bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}">
+                    <h4>
+                        <i class="fas fa-bus"></i>
+                        ${bus.id}
+                        <span class="bus-status ${statusClass}">${bus.status}</span>
+                    </h4>
+                    <!-- <p class="bus-route">
+                        <i class="fas fa-route route-icon"></i>
+                        ${bus.route}
+                    </p>
+                    <p class="last-update">
+                        <i class="fas fa-clock"></i>
+                        Last seen: ${bus.lastUpdate}
+                    </p> -->
+                    <div class="bus-actions">
+                        <button class="${buttonClass}" onclick="centerOnBus('${bus.id}')" ${isDisabled}>
+                            <i class="fas fa-crosshairs"></i> Track Bus
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `;
-    }
-
+            `;
+        }
     // Function to toggle sidebar
     window.toggleSidebar = function() {
         const sidebar = document.getElementById('sidebar-content');
@@ -206,16 +208,25 @@
                     const busItemId = `bus-item-${bus.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
                     const existingBusItem = document.getElementById(busItemId);
 
-                    if (existingBusItem) {
-                        // Just update the status and last update
-                        const statusSpan = existingBusItem.querySelector('.bus-status');
-                        statusSpan.className = `bus-status ${bus.status === 'active' ? 'status-active' : 
-                                            (bus.status === 'maintenance' ? 'status-maintenance' : 'status-inactive')}`;
-                        statusSpan.textContent = bus.status;
-
-                        existingBusItem.querySelector('.last-update').innerHTML = `
-                            <i class="fas fa-clock"></i> Last seen: ${bus.lastUpdate}`;
-                    } else {
+                        if (existingBusItem) {
+                        // Just update the status
+                            const statusSpan = existingBusItem.querySelector('.bus-status');
+                            statusSpan.className = `bus-status ${bus.status === 'active' ? 'status-active' : 
+                                                (bus.status === 'maintenance' ? 'status-maintenance' : 'status-inactive')}`;
+                            statusSpan.textContent = bus.status;
+                            
+                            // Update button disabled state based on bus status
+                            const trackButton = existingBusItem.querySelector('.track-button');
+                            if (bus.status !== 'active') {
+                                trackButton.classList.add('disabled-button');
+                                trackButton.setAttribute('disabled', 'disabled');
+                            } else {
+                                trackButton.classList.remove('disabled-button');
+                                trackButton.removeAttribute('disabled');
+                            }
+                            
+                        // Removed update to .last-update since it's now commented out
+                    }else {
                         // Create new bus item
                         busList.innerHTML += createBusListItem(bus);
                     }
@@ -277,21 +288,22 @@
 
     // Add KNUST campus POIs (Points of Interest)
     function addCampusLocations() {
-        const locations = [
-            { name: 'KNUST Main Gate', coordinates: [-1.5767, 6.6936], icon: 'entrance' },
-            { name: 'Great Hall', coordinates: [-1.5695, 6.6741], icon: 'building' },
-            { name: 'College of Health Sciences', coordinates: [-1.5651, 6.6702], icon: 'hospital' },
-            { name: 'College of Engineering', coordinates: [-1.5717, 6.6755], icon: 'school' },
-            { name: 'College of Science', coordinates: [-1.5664, 6.6730], icon: 'microscope' },
-            { name: 'University Library', coordinates: [-1.5700, 6.6719], icon: 'book' },
-            { name: 'Africa Hall', coordinates: [-1.5747, 6.6694], icon: 'home' },
-            { name: 'Independence Hall', coordinates: [-1.5694, 6.6670], icon: 'home' },
-            { name: 'Unity Hall', coordinates: [-1.5715, 6.6659], icon: 'home' },
-            { name: 'Republic Hall', coordinates: [-1.5676, 6.6686], icon: 'home' },
-            { name: 'Queens Hall', coordinates: [-1.5729, 6.6687], icon: 'home' },
-            { name: 'University Sports Stadium', coordinates: [-1.5756, 6.6707], icon: 'stadium' },
-            { name: 'Commercial Area', coordinates: [-1.5689, 6.6771], icon: 'shopping' }
-        ];
+    const locations = [
+    //     { name: 'KNUST Main Gate', coordinates: [-1.5767, 6.6936], icon: 'entrance' },
+    //     { name: 'Great Hall', coordinates: [-1.5695, 6.6741], icon: 'building' },
+    //     { name: 'College of Health Sciences', coordinates: [-1.5651, 6.6702], icon: 'hospital' },
+    //     { name: 'College of Engineering', coordinates: [-1.5717, 6.6755], icon: 'school' },
+    //     { name: 'College of Science', coordinates: [-1.5664, 6.6730], icon: 'microscope' },
+    //     { name: 'University Library', coordinates: [-1.5700, 6.6719], icon: 'book' },
+    //     { name: 'Africa Hall', coordinates: [-1.5747, 6.6694], icon: 'home' },
+    //     { name: 'Independence Hall', coordinates: [-1.5694, 6.6670], icon: 'home' },
+    //     { name: 'Unity Hall', coordinates: [-1.5715, 6.6659], icon: 'home' },
+    //     { name: 'Republic Hall', coordinates: [-1.5676, 6.6686], icon: 'home' },
+    //     { name: 'Queens Hall', coordinates: [-1.5729, 6.6687], icon: 'home' },
+    //     { name: 'University Sports Stadium', coordinates: [-1.5756, 6.6707], icon: 'stadium' },
+    //     { name: 'Commercial Area', coordinates: [-1.5689, 6.6771], icon: 'shopping' }
+     ];
+
 
         // Create markers for each location
         locations.forEach(location => {
@@ -687,6 +699,17 @@
     .animate-bus {
         animation: pulse 1.5s infinite;
     }
+    /* Add this to your existing styles */
+.disabled-button {
+    background: #cccccc !important;
+    color: #666666 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+
+.disabled-button:hover {
+    background: #cccccc !important;
+}
 
     @keyframes pulse {
         0% {
@@ -780,9 +803,9 @@
             </button>
 
             <div id="sidebar-content">
-                <h3>Active Shuttles</h3>
+                <!-- <h3>Active Shuttles</h3> -->
 
-                <div class="bus-filter">
+                <!-- <div class="bus-filter">
                     <label for="route-filter" class="form-label">Filter by
                         route:</label>
                     <select class="form-select form-select-sm"
@@ -795,7 +818,7 @@
                             Route</option>
                         <option value="halls">Halls Route</option>
                     </select>
-                </div>
+                </div> -->
 
                 <div id="bus-list">
                     <div class="text-center py-3">

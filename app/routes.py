@@ -150,8 +150,15 @@ def logout():
 @blog.route('/')
 def index():
     page = request.args.get('page', 1, type=int)
-    posts = BlogPost.query.order_by(BlogPost.date_posted.desc()).paginate(page=page, per_page=6)
+    
+    # Filter out posts with 'health' or 'event' category
+    posts = BlogPost.query \
+        .filter(BlogPost.category.notin_(['health', 'event'])) \
+        .order_by(BlogPost.date_posted.desc()) \
+        .paginate(page=page, per_page=6)
+    
     return render_template('blog.html', posts=posts)
+
 
 @blog.route('/<int:post_id>')
 def post(post_id):

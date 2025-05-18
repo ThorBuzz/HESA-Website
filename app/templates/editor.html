@@ -19,31 +19,31 @@
             <div class="navigation-menu">
                 <h4>Quick Actions</h4>
                 <div class="action-buttons">
-                    <a href="{{ url_for('editor.manage_banners') }}"
-                        class="action-btn">
-                        <i class="fas fa-images"></i> Manage Home Banners
-                    </a>
                     <a href="{{ url_for('editor.new_post') }}"
                         class="action-btn">
-                        <i class="fas fa-plus-circle"></i> New Blog Post
+                        <i class="fas fa-plus-circle"></i> New Post
                     </a>
                     <a href="{{ url_for('editor.new_potw') }}"
                         class="action-btn">
                         <i class="fas fa-user-plus"></i> New Personality
                     </a>
-                    <a href="{{ url_for('editor.new_event') }}"
+                    <!-- <a href="{{ url_for('editor.new_event') }}"
                         class="action-btn">
                         <i class="fas fa-calendar-plus"></i> New Event
+                    </a> -->
+                    <a href="{{ url_for('editor.manage_banners') }}"
+                        class="action-btn">
+                        <i class="fas fa-images"></i> Manage Home Banners
                     </a>
                     <a href="{{ url_for('editor.manage_gallery') }}"
                         class="action-btn">
                         <i class="fas fa-images"></i> Manage Gallery
                     </a>
                     {% if current_user.role == 'admin' %}
-                    <a href="{{ url_for('editor.update_bus') }}"
+                    <!-- <a href="{{ url_for('editor.update_bus') }}"
                         class="action-btn">
                         <i class="fas fa-bus"></i> Update Bus Location
-                    </a>
+                    </a> -->
                     <a href="{{ url_for('editor.assign_bus') }}"
                         class="action-btn">
                         <i class="fas fa-user-tag"></i> Assign Buses to Drivers
@@ -55,7 +55,8 @@
 
         <div class="col-md-9">
             <!-- Content Tabs -->
-            <ul class="nav nav-tabs" id="editorTabs" role="tablist">
+            <ul class="nav nav-tabs nav-fill flex-column flex-md-row"
+                id="editorTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="posts-tab"
                         data-bs-toggle="tab" data-bs-target="#posts"
@@ -68,12 +69,12 @@
                         aria-controls="potw"
                         aria-selected="false">Personalities</button>
                 </li>
-                <li class="nav-item" role="presentation">
+                <!-- <li class="nav-item" role="presentation">
                     <button class="nav-link" id="events-tab"
                         data-bs-toggle="tab" data-bs-target="#events"
                         type="button" role="tab" aria-controls="events"
                         aria-selected="false">Events</button>
-                </li>
+                </li> -->
             </ul>
 
             <div class="tab-content" id="editorTabsContent">
