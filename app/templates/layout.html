@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="google-adsense-account" content="ca-pub-5887715921307109">
         <title>{% block title %}HESA - KNUST{% endblock %}</title>
 
         <!-- Bootstrap 5 -->
@@ -17,6 +18,14 @@
         <link rel="stylesheet"
             href="{{ url_for('static', filename='css/main.css') }}">
         {% block styles %}{% endblock %}
+                <!-- Add this in the <head> section of layout.html, right before the closing </head> tag -->
+        <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbuild.js"></script>
+        <script>
+            (adsbuild = window.adsbuild || []).push({
+                google_ad_client: "ca-pub-5887715921307109", // Replace with your publisher ID
+                enable_page_level_ads: true
+            });
+        </script> -->
     </head>
     <body>
         <!-- Progress bar on top -->
