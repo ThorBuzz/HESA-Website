@@ -67,7 +67,7 @@ def landing():
 def home():
     events = Event.query.order_by(Event.event_date.desc()).limit(3).all()
     potw = PersonalityOfTheWeek.query.filter_by(is_active=True).first()
-    latest_posts = BlogPost.query.order_by(BlogPost.date_posted.desc()).limit(3).all()
+    latest_posts = BlogPost.query.order_by(BlogPost.date_posted.desc()).limit(4).all()
     
     # Get the active and ordered banners (max 3)
     banners = HomeBanner.query.filter_by(is_active=True).order_by(HomeBanner.order).limit(3).all()
@@ -155,7 +155,7 @@ def index():
     posts = BlogPost.query \
         .filter(BlogPost.category.notin_(['health', 'event'])) \
         .order_by(BlogPost.date_posted.desc()) \
-        .paginate(page=page, per_page=6)
+        .paginate(page=page, per_page=9)
     
     return render_template('blog.html', posts=posts)
 

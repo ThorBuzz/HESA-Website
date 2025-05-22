@@ -8,7 +8,8 @@
     align-items: flex-end;
     justify-content: center;
     overflow: hidden;
-    margin-top: -70px; /* Compensate for the fixed header */
+    margin-top: -70px;
+    /* Compensate for the fixed header */
     padding-top: 70px;
 }
 
@@ -71,7 +72,14 @@
     background: #2563eb;
     border-radius: 2px;
 }
-
+.post-excerpt {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    color: #555;
+    line-height: 1.6;
+    font-style: italic;
+}
 .meta-top {
     display: flex;
     margin: 2rem 0;
@@ -128,6 +136,8 @@
     font-size: 1.1rem;
     line-height: 1.85;
     color: #444;
+    text-align: left;
+    font-family: sans-serif;
 }
 
 .content p {
@@ -150,7 +160,8 @@
     font-weight: 700;
 }
 
-.content ul, .content ol {
+.content ul,
+.content ol {
     margin-bottom: 1.75rem;
     padding-left: 2rem;
 }
@@ -514,7 +525,8 @@ blockquote p {
     margin: 3rem 0;
 }
 
-.nav-previous, .nav-next {
+.nav-previous,
+.nav-next {
     flex: 0 0 48%;
     padding: 1.5rem;
     background: white;
@@ -527,7 +539,8 @@ blockquote p {
     flex-direction: column;
 }
 
-.nav-previous:hover, .nav-next:hover {
+.nav-previous:hover,
+.nav-next:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
@@ -576,7 +589,8 @@ blockquote p {
     transition: color 0.3s ease;
 }
 
-.nav-previous:hover .nav-title, .nav-next:hover .nav-title {
+.nav-previous:hover .nav-title,
+.nav-next:hover .nav-title {
     color: #2563eb;
 }
 
@@ -616,11 +630,11 @@ blockquote p {
     .article {
         padding: 2.5rem;
     }
-    
+
     .title {
         font-size: 2.25rem;
     }
-    
+
     .related-posts-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -630,53 +644,54 @@ blockquote p {
     .hero {
         height: 50vh;
     }
-    
+
     .article {
         padding: 2rem;
         transform: translateY(-60px);
     }
-    
+
     .title {
         font-size: 2rem;
     }
-    
+
     .meta-top {
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     .meta-top ul {
         flex-direction: column;
         gap: 0.75rem;
     }
-    
+
     .author-box {
         flex-direction: column;
         text-align: center;
         padding: 1.5rem;
     }
-    
+
     .author-social {
         justify-content: center;
     }
-    
+
     .comments-section {
         padding: 2rem;
     }
-    
+
     .comment-form-container {
         padding: 1.5rem;
     }
-    
+
     .post-navigation {
         flex-direction: column;
         gap: 1rem;
     }
-    
-    .nav-previous, .nav-next {
+
+    .nav-previous,
+    .nav-next {
         flex: 0 0 100%;
     }
-    
+
     .related-posts-grid {
         grid-template-columns: 1fr;
     }
@@ -686,24 +701,25 @@ blockquote p {
     .hero {
         height: 40vh;
     }
-    
+
     .article {
         padding: 1.5rem;
         transform: translateY(-40px);
     }
-    
+
     .title {
         font-size: 1.75rem;
     }
-    
+
     .content {
         font-size: 1rem;
     }
-    
-    .comments-title, .related-posts-title {
+
+    .comments-title,
+    .related-posts-title {
         font-size: 1.5rem;
     }
-    
+
     .submit-button {
         width: 100%;
         padding: 0.75rem;
