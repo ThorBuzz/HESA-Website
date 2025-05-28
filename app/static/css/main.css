@@ -910,7 +910,30 @@ a {
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.6);
 }
+/* Admin login in footer */
+.footer-admin {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
 
+.admin-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #9ca3af;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.admin-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: translateY(-2px);
+}
 /* Animation Classes */
 .fade-in {
     opacity: 0;

@@ -38,14 +38,7 @@
 
 // Function to create a bus HTML popup content
 function createPopupContent(bus) {
-    return `
-        <div class="popup-content">
-            <h5>${bus.id}</h5>
-            <!-- <p><strong>Route:</strong> ${bus.route}</p> -->
-            <p><strong>Status:</strong> ${bus.status}</p>
-            <!-- <p><strong>Last Update:</strong> ${bus.lastUpdate}</p> -->
-        </div>
-    `;
+ return
 }
         // Function to create bus list item HTML
         function createBusListItem(bus) {
@@ -125,7 +118,7 @@ function createPopupContent(bus) {
 
                 // Check if no buses match filter
                 if (filteredBuses.length === 0) {
-                    busList.innerHTML = '<div class="alert alert-info">No buses match the selected filter.</div>';
+                    busList.innerHTML = '<div class="alert alert-info">No buses available.</div>';
                 }
 
                 // Track buses we've seen to remove ones that no longer exist
@@ -154,12 +147,13 @@ function createPopupContent(bus) {
                         }
                     } else {
                         // Create custom HTML element for bus marker
+                        // Create custom HTML element for bus marker
                         const el = document.createElement('div');
                         el.className = 'bus-marker';
-                        
+
                         // Set marker color based on status
                         const markerColor = bus.status === 'active' ? '#4caf50' : '#9e9e9e';
-                        
+
                         // Add bus icon HTML
                         el.innerHTML = `<div class="bus-icon" style="color: ${markerColor};">
                             <i class="fas fa-bus"></i>
@@ -252,39 +246,39 @@ function createPopupContent(bus) {
             });
     }
 
-    // Function to center map on a specific bus
-    window.centerOnBus = function(busId) {
-        if (busMarkers[busId]) {
-            map.flyTo({
-                center: busMarkers[busId].marker.getLngLat(),
-                zoom: 17,
-                speed: 0.8
-            });
+            // Function to center map on a specific bus
+            window.centerOnBus = function(busId) {
+                if (busMarkers[busId]) {
+                    map.flyTo({
+                        center: busMarkers[busId].marker.getLngLat(),
+                        zoom: 17,
+                        speed: 0.8
+                    });
 
-            // Open popup
-            busMarkers[busId].marker.togglePopup();
+                    // Open popup
+                    busMarkers[busId].marker.togglePopup();
 
-            // Highlight in sidebar
-            document.querySelectorAll('.bus-info').forEach(el => {
-                el.style.borderColor = '#0d6efd';
-                el.style.background = '#f8f9fa';
-            });
+                    // Highlight in sidebar
+                    document.querySelectorAll('.bus-info').forEach(el => {
+                        el.style.borderColor = '#0d6efd';
+                        el.style.background = '#f8f9fa';
+                    });
 
-            const busItem = document.getElementById(`bus-item-${busId.replace(/[^a-zA-Z0-9]/g, '-')}`);
-            if (busItem) {
-                busItem.style.borderColor = '#2e7d32';
-                busItem.style.background = '#e8f5e9';
-                busItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
+                    const busItem = document.getElementById(`bus-item-${busId.replace(/[^a-zA-Z0-9]/g, '-')}`);
+                    if (busItem) {
+                        busItem.style.borderColor = '#2e7d32';
+                        busItem.style.background = '#e8f5e9';
+                        busItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
 
-            selectedBusId = busId;
-            
-            // If sidebar is collapsed, expand it
-            if (sidebarCollapsed) {
-                toggleSidebar();
-            }
-        }
-    };
+                    selectedBusId = busId;
+                    
+                    // Auto-hide sidebar after tracking (collapse it)
+                    if (!sidebarCollapsed) {
+                        toggleSidebar();
+                    }
+                }
+            };
 
     // Add KNUST campus POIs (Points of Interest)
     function addCampusLocations() {
@@ -661,13 +655,15 @@ function createPopupContent(bus) {
         background: #ff9800;
     }
     
-    /* Bus marker styling */
-    .bus-marker {
-        width: 40px;
-        height: 40px;
-        position: relative;
-        cursor: pointer;
-    }
+.bus-marker {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.bus-marker:hover {
+    transform: scale(1.1);
+}
     
     .bus-icon {
         position: absolute;

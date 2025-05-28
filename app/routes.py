@@ -38,6 +38,8 @@ def save_image(form_image, folder='uploads'):
         # Use local storage
         return save_image_locally(form_image, folder)
 
+# In your main routes file - update the save_image_locally function:
+
 def save_image_locally(form_image, folder='uploads'):
     """Save an uploaded image with a unique filename to the local filesystem"""
     random_hex = secrets.token_hex(8)
@@ -49,13 +51,24 @@ def save_image_locally(form_image, folder='uploads'):
     # Ensure directory exists
     os.makedirs(folder_path, exist_ok=True)
     
-    # Resize image
-    output_size = (800, 600)
+    # Resize image with better quality settings
+    output_size = (1200, 900)  # Increased resolution
     i = Image.open(form_image)
-    i.thumbnail(output_size)
-    i.save(picture_path)
+    
+    # Use LANCZOS resampling for better quality
+    i.thumbnail(output_size, Image.Resampling.LANCZOS)
+    
+    # Save with high quality
+    if i.format == 'JPEG' or f_ext.lower() in ['.jpg', '.jpeg']:
+        i.save(picture_path, 'JPEG', quality=95, optimize=True)
+    elif i.format == 'PNG' or f_ext.lower() == '.png':
+        i.save(picture_path, 'PNG', optimize=True)
+    else:
+        # Default to JPEG with high quality
+        i.save(picture_path, 'JPEG', quality=95, optimize=True)
     
     return picture_fn
+
 
 # Main routes
 @main.route('/')

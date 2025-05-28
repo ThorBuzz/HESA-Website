@@ -40,10 +40,10 @@
                         <i class="fas fa-images"></i> Manage Gallery
                     </a>
                     {% if current_user.role == 'admin' %}
-                    <!-- <a href="{{ url_for('editor.update_bus') }}"
+                    <a href="{{ url_for('editor.update_bus') }}"
                         class="action-btn">
                         <i class="fas fa-bus"></i> Update Bus Location
-                    </a> -->
+                    </a>
                     <a href="{{ url_for('editor.assign_bus') }}"
                         class="action-btn">
                         <i class="fas fa-user-tag"></i> Assign Buses to Drivers
