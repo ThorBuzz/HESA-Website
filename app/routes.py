@@ -2,10 +2,10 @@ from flask import Blueprint, render_template, url_for, flash, redirect, request,
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db
 from app.models import (User, BlogPost, Comment, PersonalityOfTheWeek, 
-                        PotwComment, Event, BusLocation, HomeBanner, GalleryPhoto, GalleryCategory)
+                        PotwComment, Event, BusLocation, HomeBanner, GalleryPhoto, GalleryCategory, FohContestant, FohVote)
 from app.forms import (AssignBusForm, RegistrationForm, LoginForm, BlogPostForm, CommentForm, 
                       PotwForm, PotwCommentForm, EventForm, BusLocationForm, HomeBannerForm, GalleryCategoryForm, 
-                      GalleryPhotoForm)
+                      GalleryPhotoForm, FohContestantForm, VoteForm)
 import os
 import secrets
 from PIL import Image
@@ -759,7 +759,6 @@ def toggle_banner():
     return jsonify({'success': False, 'error': 'Banner not found'}), 404
 
 
-gallery = Blueprint('gallery', __name__, url_prefix='/gallery')
 
 # Create a new blueprint for gallery
 gallery = Blueprint('gallery', __name__, url_prefix='/gallery')
@@ -958,3 +957,225 @@ def like_photo(photo_id):
     photo.likes += 1
     db.session.commit()
     return jsonify({'success': True, 'likes': photo.likes})
+
+
+# Create a new blueprint for Face of HESA
+foh = Blueprint('foh', __name__, url_prefix='/face-of-hesa')
+
+# Global voting settings
+class VotingSettings:
+    is_voting_active = True
+    vote_cost = 1.0  # Cost per vote in GHS
+
+# Public routes for Face of HESA
+@foh.route('/')
+def index():
+    contestants = FohContestant.query.filter_by(is_active=True).order_by(FohContestant.votes.desc()).all()
+    voting_active = VotingSettings.is_voting_active
+    vote_cost = VotingSettings.vote_cost
+    return render_template('foh.html', contestants=contestants, voting_active=voting_active, vote_cost=vote_cost)
+
+@foh.route('/vote/<int:contestant_id>', methods=['POST'])
+def process_vote(contestant_id):
+    if not VotingSettings.is_voting_active:
+        flash('Voting is currently closed.', 'warning')
+        return redirect(url_for('foh.index'))
+    
+    contestant = FohContestant.query.get_or_404(contestant_id)
+    
+    # Get votes from form data
+    votes = int(request.form.get('votes', 1))
+    email = request.form.get('email', '')
+    
+    # Calculate amount
+    amount = votes * VotingSettings.vote_cost
+    
+    # Generate a unique reference
+    reference = f"foh-{contestant_id}-{secrets.token_hex(6)}"
+    
+    # Store pending vote
+    vote = FohVote(
+        contestant_id=contestant_id,
+        email=email,
+        votes_count=votes,
+        amount=amount,
+        transaction_ref=reference,
+        verified=False
+    )
+    db.session.add(vote)
+    db.session.commit()
+    
+    # Redirect to payment gateway
+    return redirect(url_for('foh.initiate_payment', reference=reference))
+
+@foh.route('/payment/<reference>')
+def initiate_payment(reference):
+    vote = FohVote.query.filter_by(transaction_ref=reference).first_or_404()
+    contestant = FohContestant.query.get_or_404(vote.contestant_id)
+    
+    # Calculate amount in kobo (multiply by 100) for Paystack
+    amount_kobo = int(vote.amount * 100)
+    
+    # For demo purposes, we'll just show the payment page template
+    # In production, you'd integrate with Paystack API to initialize transaction
+    return render_template('payment.html', 
+                          vote=vote, 
+                          contestant=contestant, 
+                          amount_kobo=amount_kobo,
+                          reference=reference)
+
+@foh.route('/verify/<reference>')
+def verify_payment(reference):
+    # In a real implementation, this would verify the payment with Paystack API
+    # For demo purposes, we'll just mark the vote as verified
+    
+    vote = FohVote.query.filter_by(transaction_ref=reference).first_or_404()
+    
+    # Mark vote as verified
+    vote.verified = True
+    
+    # Update contestant vote count
+    contestant = FohContestant.query.get(vote.contestant_id)
+    contestant.votes += vote.votes_count
+    
+    db.session.commit()
+    
+    flash(f'Thank you! Your {vote.votes_count} vote(s) for {contestant.name} has been recorded.', 'success')
+    return redirect(url_for('foh.index'))
+
+# Admin routes for Face of HESA management
+@editor.route('/foh/manage')
+@login_required
+def manage_foh():
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    contestants = FohContestant.query.order_by(FohContestant.created_at.desc()).all()
+    form = FohContestantForm()
+    
+    return render_template('manage_foh.html', 
+                          contestants=contestants, 
+                          form=form, 
+                          voting_active=VotingSettings.is_voting_active,
+                          vote_cost=VotingSettings.vote_cost)
+
+@editor.route('/foh/add', methods=['POST'])
+@login_required
+def add_contestant():
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    form = FohContestantForm()
+    
+    if form.validate_on_submit():
+        image_file = 'default_contestant.jpg'
+        if form.image.data:
+            image_file = save_image(form.image.data, 'foh_pics')
+        
+        contestant = FohContestant(
+            name=form.name.data,
+            description=form.description.data,
+            image_file=image_file,
+            is_active=form.is_active.data
+        )
+        
+        db.session.add(contestant)
+        db.session.commit()
+        
+        flash('Contestant added successfully!', 'success')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
+    
+    return redirect(url_for('editor.manage_foh'))
+
+@editor.route('/foh/edit/<int:contestant_id>', methods=['GET', 'POST'])
+@login_required
+def edit_contestant(contestant_id):
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    contestant = FohContestant.query.get_or_404(contestant_id)
+    form = FohContestantForm()
+    
+    if form.validate_on_submit():
+        contestant.name = form.name.data
+        contestant.description = form.description.data
+        contestant.is_active = form.is_active.data
+        
+        if form.image.data:
+            # Delete old image if applicable
+            if contestant.image_file != 'default_contestant.jpg' and 'http' in contestant.image_file:
+                from app.utils.s3_helper import delete_file_from_s3
+                delete_file_from_s3(contestant.image_file)
+            
+            # Save new image
+            contestant.image_file = save_image(form.image.data, 'foh_pics')
+        
+        db.session.commit()
+        flash('Contestant updated successfully!', 'success')
+        return redirect(url_for('editor.manage_foh'))
+    
+    # Pre-populate form with existing data
+    elif request.method == 'GET':
+        form.name.data = contestant.name
+        form.description.data = contestant.description
+        form.is_active.data = contestant.is_active
+    
+    return render_template('edit_contestant.html', form=form, contestant=contestant)
+
+@editor.route('/foh/delete/<int:contestant_id>', methods=['POST'])
+@login_required
+def delete_contestant(contestant_id):
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    contestant = FohContestant.query.get_or_404(contestant_id)
+    
+    # Delete image if applicable
+    if contestant.image_file != 'default_contestant.jpg' and 'http' in contestant.image_file:
+        from app.utils.s3_helper import delete_file_from_s3
+        delete_file_from_s3(contestant.image_file)
+    
+    # Delete associated votes
+    FohVote.query.filter_by(contestant_id=contestant.id).delete()
+    
+    # Delete the contestant
+    db.session.delete(contestant)
+    db.session.commit()
+    
+    flash('Contestant deleted successfully!', 'success')
+    return redirect(url_for('editor.manage_foh'))
+
+@editor.route('/foh/toggle_voting', methods=['POST'])
+@login_required
+def toggle_voting():
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    # Toggle voting status
+    VotingSettings.is_voting_active = not VotingSettings.is_voting_active
+    
+    status = "enabled" if VotingSettings.is_voting_active else "disabled"
+    flash(f'Voting has been {status}!', 'success')
+    
+    return redirect(url_for('editor.manage_foh'))
+
+@editor.route('/foh/update_vote_cost', methods=['POST'])
+@login_required
+def update_vote_cost():
+    if current_user.role not in ['admin', 'editor']:
+        abort(403)
+    
+    try:
+        new_cost = float(request.form.get('vote_cost', 1.0))
+        if new_cost <= 0:
+            raise ValueError("Cost must be positive")
+        
+        VotingSettings.vote_cost = new_cost
+        flash(f'Vote cost updated to GHS {new_cost:.2f}!', 'success')
+    except ValueError:
+        flash('Invalid vote cost. Please enter a positive number.', 'danger')
+    
+    return redirect(url_for('editor.manage_foh'))

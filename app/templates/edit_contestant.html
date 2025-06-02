@@ -1,0 +1,161 @@
+{% extends "layout.html" %}
+{% from "macros/image_helper.html" import render_image %}
+
+{% block title %}Edit Contestant - HESA KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+<style>
+    .form-container {
+        background-color: white;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .contestant-preview {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .preview-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+    
+    .preview-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .votes-display {
+        background-color: #f8f9fa;
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .votes-count {
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="editor-header mb-4">
+        <h1>Edit Contestant</h1>
+        <p>Update contestant information and settings</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="navigation-menu">
+                <h4>Quick Actions</h4>
+                <div class="action-buttons">
+                    <a href="{{ url_for('editor.manage_foh') }}" class="action-btn">
+                        <i class="fas fa-arrow-left"></i> Back to Contestants
+                    </a>
+                    <a href="{{ url_for('foh.index') }}" class="action-btn" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> View Public Page
+                    </a>
+                    <button type="button" class="action-btn text-danger" data-bs-toggle="modal" data-bs-target="#deleteContestantModal">
+                        <i class="fas fa-trash"></i> Delete Contestant
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="form-container">
+                <!-- Contestant Preview -->
+                <div class="contestant-preview">
+                    <div class="preview-image">
+                        {{ render_image(contestant.image_file, 'foh_pics/', 'foh_pics/default_contestant.jpg', contestant.name, 'contestant-image') }}
+                    </div>
+                    <div class="preview-info">
+                        <h3>{{ contestant.name }}</h3>
+                        <div class="votes-display">
+                            <i class="fas fa-vote-yea"></i>
+                            <span class="votes-count">{{ contestant.votes }}</span>
+                            <span>votes</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Edit Form -->
+                <form action="{{ url_for('editor.edit_contestant', contestant_id=contestant.id) }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Contestant Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ form.name.data }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required>{{ form.description.data }}</textarea>
+                        <div class="form-text">Brief description about the contestant (program, year, interests, etc.)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Contestant Photo</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        <div class="form-text">Upload a new image only if you want to change the current one. Recommended size: 800x1000 pixels</div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_active" name="is_active" {% if form.is_active.data %}checked{% endif %}>
+                        <label class="form-check-label" for="is_active">Active</label>
+                        <div class="form-text">Inactive contestants won't appear on the public page</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('editor.manage_foh') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Contestant Modal -->
+<div class="modal fade" id="deleteContestantModal" tabindex="-1" aria-labelledby="deleteContestantModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteContestantModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the contestant: <strong>{{ contestant.name }}</strong>?</p>
+                <p class="text-danger">This action cannot be undone. All votes for this contestant will also be deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('editor.delete_contestant', contestant_id=contestant.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

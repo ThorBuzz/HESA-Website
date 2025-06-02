@@ -1,0 +1,311 @@
+/* Face of HESA CSS */
+
+/* Hero Section */
+.hero {
+    position: relative;
+    height: 50vh;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-bottom: 3rem;
+}
+
+.hero-image-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
+}
+
+.hero-content {
+    text-align: center;
+    padding: 0 20px;
+    max-width: 800px;
+    z-index: 1;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.hero-details {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.hero-detail {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+}
+
+.hero-detail i {
+    margin-right: 0.5rem;
+}
+
+.hero-detail.active {
+    background-color: rgba(40, 167, 69, 0.3);
+}
+
+.hero-detail.inactive {
+    background-color: rgba(220, 53, 69, 0.3);
+}
+
+/* Contestants Section */
+.contestants-section {
+    padding: 3rem 0;
+}
+
+.section-heading {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.section-heading h2 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.section-heading p {
+    color: #666;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.voting-instructions {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 3rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.voting-instructions h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.voting-instructions ol {
+    padding-left: 1.5rem;
+}
+
+.voting-instructions li {
+    margin-bottom: 0.5rem;
+}
+
+.contestants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.contestant-card {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contestant-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.contestant-image-container {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+}
+
+.contestant-number {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 1;
+}
+
+.contestant-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.contestant-card:hover .contestant-image {
+    transform: scale(1.05);
+}
+
+.contestant-details {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.contestant-name {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.contestant-description {
+    color: #666;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.votes-counter {
+    background-color: #f8f9fa;
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.votes-count {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.votes-label {
+    color: #666;
+    font-size: 0.9rem;
+    margin-left: 0.2rem;
+}
+
+.vote-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+.vote-btn:hover {
+    background-color: #0069d9;
+}
+
+.vote-btn.disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.no-contestants {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+}
+
+.no-contestants-icon {
+    font-size: 3rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+/* Modal Styling */
+.modal-content {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.modal-header {
+    background-color: #007bff;
+    color: white;
+}
+
+.modal-header .btn-close {
+    color: white;
+}
+
+.form-text {
+    font-size: 0.85rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .hero-details {
+        flex-direction: column;
+        gap: 0.7rem;
+    }
+    
+    .contestants-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 576px) {
+    .hero {
+        height: 40vh;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .contestant-image-container {
+        height: 250px;
+    }
+}

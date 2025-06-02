@@ -1,0 +1,177 @@
+{% extends "layout.html" %}
+{% from "macros/image_helper.html" import render_image %}
+
+{% block title %}Face of HESA - KNUST{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/foh.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-image-container">
+        <img src="{{ url_for('static', filename='img/foh-banner.jpg') }}" alt="Face of HESA Banner" class="hero-image">
+        <div class="hero-overlay"></div>
+    </div>
+    <div class="hero-content">
+        <h1 class="hero-title">Face of HESA</h1>
+        <p class="hero-subtitle">Vote for your favorite contestant!</p>
+        <div class="hero-details">
+            <div class="hero-detail">
+                <i class="fas fa-star"></i>
+                <span>Celebrating Beauty & Intelligence</span>
+            </div>
+            <div class="hero-detail">
+                <i class="fas fa-coins"></i>
+                <span>GH₵ {{ vote_cost }} per vote</span>
+            </div>
+            {% if voting_active %}
+            <div class="hero-detail active">
+                <i class="fas fa-vote-yea"></i>
+                <span>Voting is OPEN</span>
+            </div>
+            {% else %}
+            <div class="hero-detail inactive">
+                <i class="fas fa-ban"></i>
+                <span>Voting is CLOSED</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Contestants Section -->
+<section class="contestants-section">
+    <div class="container">
+        <div class="section-heading">
+            <h2>Meet Our Contestants</h2>
+            <p>Vote for your favorite contestant to crown them as the next Face of HESA!</p>
+        </div>
+        
+        {% if voting_active %}
+        <div class="voting-instructions">
+            <h3><i class="fas fa-info-circle"></i> How to Vote</h3>
+            <ol>
+                <li>Click on the "Vote Now" button below your favorite contestant</li>
+                <li>Enter the number of votes you wish to cast</li>
+                <li>Complete the payment process (GH₵ {{ vote_cost }} per vote)</li>
+                <li>Your votes will be counted once payment is confirmed</li>
+            </ol>
+        </div>
+        {% endif %}
+        
+        <div class="contestants-grid">
+            {% for contestant in contestants %}
+            <div class="contestant-card">
+                <div class="contestant-image-container">
+                    <div class="contestant-number">{{ loop.index }}</div>
+                    {{ render_image(contestant.image_file, 'foh_pics/', 'foh_pics/default_contestant.jpg', contestant.name, 'contestant-image') }}
+                </div>
+                <div class="contestant-details">
+                    <h3 class="contestant-name">{{ contestant.name }}</h3>
+                    <p class="contestant-description">{{ contestant.description }}</p>
+                    <div class="votes-counter">
+                        <span class="votes-count">{{ contestant.votes }}</span>
+                        <span class="votes-label">Votes</span>
+                    </div>
+                    {% if voting_active %}
+                    <button class="vote-btn" data-bs-toggle="modal" data-bs-target="#voteModal" data-contestant-id="{{ contestant.id }}" data-contestant-name="{{ contestant.name }}">
+                        <i class="fas fa-vote-yea"></i> Vote Now
+                    </button>
+                    {% else %}
+                    <button class="vote-btn disabled" disabled>
+                        <i class="fas fa-ban"></i> Voting Closed
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="no-contestants">
+                <div class="no-contestants-icon">
+                    <i class="fas fa-users-slash"></i>
+                </div>
+                <p>No contestants available at the moment.</p>
+                <p>Check back soon for updates!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Vote Modal -->
+{% if voting_active %}
+<div class="modal fade" id="voteModal" tabindex="-1" aria-labelledby="voteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="voteModalLabel">Vote for <span id="contestantName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="voteForm" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="votes" class="form-label">Number of Votes</label>
+                        <input type="number" class="form-control" id="votes" name="votes" min="1" value="1" required>
+                        <div class="form-text">Cost: GH₵ <span id="costDisplay">{{ vote_cost }}</span></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address (Optional)</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com">
+                        <div class="form-text">We'll never share your email with anyone else.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-credit-card"></i> Proceed to Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{% if voting_active %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const voteModal = document.getElementById('voteModal');
+    const voteForm = document.getElementById('voteForm');
+    const contestantNameSpan = document.getElementById('contestantName');
+    const votesInput = document.getElementById('votes');
+    const costDisplay = document.getElementById('costDisplay');
+    const voteCost = {{ vote_cost }};
+    
+    if (voteModal) {
+        voteModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const contestantId = button.getAttribute('data-contestant-id');
+            const contestantName = button.getAttribute('data-contestant-name');
+            
+            contestantNameSpan.textContent = contestantName;
+            voteForm.action = "{{ url_for('foh.process_vote', contestant_id=0) }}".replace('0', contestantId);
+            
+            // Reset form values
+            votesInput.value = 1;
+            costDisplay.textContent = voteCost.toFixed(2);
+        });
+    }
+    
+    if (votesInput) {
+        votesInput.addEventListener('input', function() {
+            const votes = parseInt(this.value) || 0;
+            const totalCost = votes * voteCost;
+            costDisplay.textContent = totalCost.toFixed(2);
+        });
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

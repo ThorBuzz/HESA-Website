@@ -172,3 +172,25 @@ class GalleryPhoto(db.Model):
     def __repr__(self):
         return f"GalleryPhoto('{self.title}', '{self.date_posted}')"
     
+
+class FohContestant(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    image_file = db.Column(db.String(255), nullable=False, default='default_contestant.jpg')
+    votes = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class FohVote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    contestant_id = db.Column(db.Integer, db.ForeignKey('foh_contestant.id'), nullable=False)
+    email = db.Column(db.String(120), nullable=True)  # Optional voter email
+    votes_count = db.Column(db.Integer, default=1)
+    amount = db.Column(db.Float, nullable=False)  # Amount paid in GHS
+    transaction_ref = db.Column(db.String(255), nullable=False)  # Paystack reference
+    verified = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    contestant = db.relationship('FohContestant', backref='votes_received')

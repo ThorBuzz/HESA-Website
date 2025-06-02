@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import HiddenField, StringField, PasswordField, SubmitField, BooleanField, TextAreaField, SelectField, DateField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Optional
+from wtforms import HiddenField, IntegerField, StringField, PasswordField, SubmitField, BooleanField, TextAreaField, SelectField, DateField
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Optional, NumberRange
 from app.models import User
 
 class RegistrationForm(FlaskForm):
@@ -120,3 +120,15 @@ class GalleryPhotoForm(FlaskForm):
     image = FileField('Upload Photo', validators=[FileAllowed(['jpg', 'png', 'jpeg']), DataRequired()])
     is_active = BooleanField('Active', default=True)
     submit = SubmitField('Upload Photo')
+    
+class FohContestantForm(FlaskForm):
+    name = StringField('Contestant Name', validators=[DataRequired(), Length(min=2, max=100)])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    image = FileField('Contestant Photo', validators=[FileAllowed(['jpg', 'png', 'jpeg'])])
+    is_active = BooleanField('Active')
+    submit = SubmitField('Submit')
+
+class VoteForm(FlaskForm):
+    votes = IntegerField('Number of Votes', validators=[DataRequired(), NumberRange(min=1)])
+    email = StringField('Email (Optional)', validators=[Optional(), Email()])
+    submit = SubmitField('Proceed to Payment')
