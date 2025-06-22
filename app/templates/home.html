@@ -5,7 +5,8 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
   :root {
     --primary: #2563eb;
@@ -808,8 +809,8 @@
   <div id="progressBar" class="progress-bar"></div>
 
   {% for banner in banners %}
-  <div class="hero-slide {% if loop.first %}active{% endif %}" 
-       style="background-image: url('{{ banner.image_file if 'http' in banner.image_file else url_for('static', filename='uploads/banners/' + banner.image_file) }}')">
+  <div class="hero-slide {% if loop.first %}active{% endif %}"
+    style="background-image: url('{{ banner.image_file if 'http' in banner.image_file else url_for('static', filename='uploads/banners/' + banner.image_file) }}')">
     <div class="hero-content">
       <h1 class="hero-title">{{ banner.title }}</h1>
       <p class="hero-description">{{ banner.description }}</p>
@@ -820,39 +821,46 @@
   <!-- Fallback to events if no banners are set up -->
   {% for event in events %}
   <div class="hero-slide {% if loop.first %}active{% endif %}"
-       style="background-image: url('{{ event.image_file if 'http' in event.image_file else url_for('static', filename='uploads/event_pics/' + event.image_file) }}')">
+    style="background-image: url('{{ event.image_file if 'http' in event.image_file else url_for('static', filename='uploads/event_pics/' + event.image_file) }}')">
     <div class="hero-content">
       <h1 class="hero-title">{{ event.title }}</h1>
       <p class="hero-description">{{ event.description|truncate(120) }}</p>
-      <a href="{{ url_for('main.event', event_id=event.id) }}" class="hero-cta">Learn More</a>
+      <a href="{{ url_for('main.event', event_id=event.id) }}"
+        class="hero-cta">Learn More</a>
     </div>
   </div>
   {% else %}
   <!-- Default items if no events or banners -->
-  <div class="hero-slide active" style="background-image: url('{{ url_for('static', filename='img/default_carousel1.jpg') }}')">
+  <div class="hero-slide active"
+    style="background-image: url('{{ url_for('static', filename='img/default_carousel1.jpg') }}')">
     <div class="hero-content">
       <h1 class="hero-title">Healthcare Symposium 2025</h1>
-      <p class="hero-description">Join us for an insightful session with leading medical professionals discussing the future of healthcare.</p>
+      <p class="hero-description">Join us for an insightful session with leading
+        medical professionals discussing the future of healthcare.</p>
       <a href="#" class="hero-cta">Register Now</a>
     </div>
   </div>
-  <div class="hero-slide" style="background-image: url('{{ url_for('static', filename='img/default_carousel2.jpg') }}')">
+  <div class="hero-slide"
+    style="background-image: url('{{ url_for('static', filename='img/default_carousel2.jpg') }}')">
     <div class="hero-content">
       <h1 class="hero-title">Campus Elections 2025</h1>
-      <p class="hero-description">Shape the future of our campus. Vote for your representatives and make your voice heard.</p>
+      <p class="hero-description">Shape the future of our campus. Vote for your
+        representatives and make your voice heard.</p>
       <a href="#" class="hero-cta">Learn More</a>
     </div>
   </div>
-  <div class="hero-slide" style="background-image: url('{{ url_for('static', filename='img/default_carousel3.jpg') }}')">
+  <div class="hero-slide"
+    style="background-image: url('{{ url_for('static', filename='img/default_carousel3.jpg') }}')">
     <div class="hero-content">
       <h1 class="hero-title">Inter-Faculty Sports Week</h1>
-      <p class="hero-description">Experience the thrill of competition at our annual sports championship between health science faculties.</p>
+      <p class="hero-description">Experience the thrill of competition at our
+        annual sports championship between health science faculties.</p>
       <a href="#" class="hero-cta">View Schedule</a>
     </div>
   </div>
   {% endfor %}
   {% endfor %}
-  
+
   <!-- Hero Navigation Controls -->
   <div class="hero-nav">
     <div class="hero-control hero-prev">
@@ -862,26 +870,28 @@
       <i class="fas fa-chevron-right"></i>
     </div>
   </div>
-  
+
   <div class="indicators"></div>
 </section>
-
 
 <!-- Latest Updates Section (Blog Posts) -->
 <section class="updates-section">
   <div class="container">
     <div class="section-heading">
       <h2 class="section-title">HESA Blog</h2>
-      <p class="section-subtitle">Stay informed with the latest news and events from HESA</p>
+      <p class="section-subtitle">Stay informed with the latest news and events
+        from HESA</p>
     </div>
-    
+
     <div class="updates-grid">
-      {% set blog_posts = posts | rejectattr('category', 'equalto', 'health') | rejectattr('category', 'equalto', 'event') | list %}
+      {% set blog_posts = posts | rejectattr('category', 'equalto', 'health') |
+      rejectattr('category', 'equalto', 'event') | list %}
 
       {% for post in blog_posts[:3] %}
       <article class="update-card">
         <div class="update-img">
-          {{ render_image(post.image_file, 'blog_pics/', 'default_blog.jpeg', post.title) }}
+          {{ render_image(post.image_file, 'blog_pics/', 'default_blog.jpeg',
+          post.title) }}
         </div>
         <div class="update-content">
           <div class="update-meta">
@@ -896,7 +906,8 @@
           </div>
           <h2 class="update-title">{{ post.title }}</h2>
           <p class="update-excerpt">{{ post.excerpt }}</p>
-          <a href="{{ url_for('blog.post', post_id=post.id) }}" class="update-link">Read More <i class="fas fa-arrow-right"></i></a>
+          <a href="{{ url_for('blog.post', post_id=post.id) }}"
+            class="update-link">Read More <i class="fas fa-arrow-right"></i></a>
         </div>
       </article>
       {% else %}
@@ -914,8 +925,10 @@
     <div class="bus-tracker-content">
       <div class="bus-tracker-left">
         <h2 class="bus-tracker-title">Bus Tracking System</h2>
-        <p class="bus-tracker-description">Never miss a shuttle again! Our new bus tracking system lets you see exactly where campus buses are and when they'll arrive at your stop.</p>
-        
+        <p class="bus-tracker-description">Never miss a shuttle again! Our new
+          bus tracking system lets you see exactly where campus buses are and
+          when they'll arrive at your stop.</p>
+
         <div class="bus-benefits">
           <div class="benefit-item">
             <div class="benefit-icon">
@@ -926,7 +939,7 @@
               <!-- <p>See exactly where your bus is in real-time</p> -->
             </div>
           </div>
-          
+
           <div class="benefit-item">
             <div class="benefit-icon">
               <i class="fas fa-clock"></i>
@@ -936,7 +949,7 @@
               <!-- <p>Know exactly when to head to your stop</p> -->
             </div>
           </div>
-          
+
           <div class="benefit-item">
             <div class="benefit-icon">
               <i class="fas fa-bell"></i>
@@ -947,85 +960,105 @@
             </div>
           </div>
         </div>
-        
+
         <a href="{{ url_for('main.map') }}" class="hero-cta">Start</a>
       </div>
-      
+
       <div class="bus-tracker-right">
-        <img src="{{ url_for('static', filename='img/bus tracking.jpg') }}" alt="Bus Tracker App Preview" class="bus-tracker-img">
+        <img src="{{ url_for('static', filename='img/bus tracking.jpg') }}"
+          alt="Bus Tracker App Preview" class="bus-tracker-img">
       </div>
     </div>
   </div>
 </section>
-
 
 <!-- Health Awareness Section (Dynamic from Blog Posts) -->
 <section class="features-section">
   <div class="container">
     <div class="section-heading">
       <h2 class="section-title">Health Awareness Programs</h2>
-      <p class="section-subtitle">Promoting health education and wellness in our community</p>
+      <p class="section-subtitle">Promoting health education and wellness in our
+        community</p>
     </div>
-    
+
     <div class="features-grid">
-      {% set health_posts = posts|selectattr('category', 'equalto', 'health')|list %}
-      
+      {% set health_posts = posts|selectattr('category', 'equalto',
+      'health')|list %}
+
       {% for post in health_posts[:3] %}
       <div class="feature-card">
         <div class="feature-img">
-          {{ render_image(post.image_file, 'blog_pics/', 'default_health.jpeg', post.title) }}
+          {{ render_image(post.image_file, 'blog_pics/', 'default_health.jpeg',
+          post.title) }}
         </div>
         <div class="feature-content">
           <h3 class="feature-title">{{ post.title }}</h3>
           <p class="feature-description">{{ post.excerpt }}</p>
-          <a href="{{ url_for('blog.post', post_id=post.id) }}" class="feature-link">Learn more <i class="fas fa-arrow-right"></i></a>
+          <a href="{{ url_for('blog.post', post_id=post.id) }}"
+            class="feature-link">Learn more <i
+              class="fas fa-arrow-right"></i></a>
         </div>
       </div>
       {% else %}
       <!-- Fallback content if no health posts are found -->
       <div class="feature-card">
         <div class="feature-img">
-          <img src="{{ url_for('static', filename='blog_pics/default_health.jpeg') }}" alt="Mental Health Awareness">
+          <img
+            src="{{ url_for('static', filename='blog_pics/default_health.jpeg') }}"
+            alt="Mental Health Awareness">
         </div>
         <div class="feature-content">
           <h3 class="feature-title">Mental Health Awareness</h3>
-          <p class="feature-description">Supporting student mental wellbeing through education, resources, and community events dedicated to stress management and emotional health.</p>
-          <a href="#" class="feature-link">Learn more <i class="fas fa-arrow-right"></i></a>
+          <p class="feature-description">Supporting student mental wellbeing
+            through education, resources, and community events dedicated to
+            stress management and emotional health.</p>
+          <a href="#" class="feature-link">Learn more <i
+              class="fas fa-arrow-right"></i></a>
         </div>
       </div>
-      
+
       <div class="feature-card">
         <div class="feature-img">
-          <img src="{{ url_for('static', filename='blog_pics/default_health.jpeg') }}" alt="Preventive Healthcare">
+          <img
+            src="{{ url_for('static', filename='blog_pics/default_health.jpeg') }}"
+            alt="Preventive Healthcare">
         </div>
         <div class="feature-content">
           <h3 class="feature-title">Preventive Healthcare</h3>
-          <p class="feature-description">Promoting early detection and prevention strategies through regular health screenings, vaccinations, and educational workshops.</p>
-          <a href="#" class="feature-link">Learn more <i class="fas fa-arrow-right"></i></a>
+          <p class="feature-description">Promoting early detection and
+            prevention strategies through regular health screenings,
+            vaccinations, and educational workshops.</p>
+          <a href="#" class="feature-link">Learn more <i
+              class="fas fa-arrow-right"></i></a>
         </div>
       </div>
-      
+
       <div class="feature-card">
         <div class="feature-img">
-          <img src="{{ url_for('static', filename='blog_pics/default_health.jpeg') }}" alt="Nutrition & Wellness">
+          <img
+            src="{{ url_for('static', filename='blog_pics/default_health.jpeg') }}"
+            alt="Nutrition & Wellness">
         </div>
         <div class="feature-content">
           <h3 class="feature-title">Nutrition & Wellness</h3>
-          <p class="feature-description">Empowering students with knowledge about balanced nutrition, physical fitness, and holistic wellness practices for optimal health.</p>
-          <a href="#" class="feature-link">Learn more <i class="fas fa-arrow-right"></i></a>
+          <p class="feature-description">Empowering students with knowledge
+            about balanced nutrition, physical fitness, and holistic wellness
+            practices for optimal health.</p>
+          <a href="#" class="feature-link">Learn more <i
+              class="fas fa-arrow-right"></i></a>
         </div>
       </div>
       {% endfor %}
     </div>
-    
+
     {% if health_posts|length > 3 %}
     <div class="text-center mt-5">
-      <a href="{{ url_for('blog.category', category='health') }}" class="cta-button">View All Health Topics</a>
+      <a href="{{ url_for('blog.category', category='health') }}"
+        class="cta-button">View All Health Topics</a>
     </div>
     {% endif %}
   </div>
 </section>
-
 
 <!-- Entertainment Section (Updated for Upcoming Events) -->
 <section class="entertainment-section">
@@ -1034,40 +1067,43 @@
       <h2 class="section-title2">Upcoming Events</h2>
       <!-- <p class="section-subtitle">Stay tuned for exciting happenings organized by and for students!</p> -->
     </div>
-    
+
     <div class="entertainment-grid">
-    <a href="{{ url_for('foh.index') }}" class="entertainment-card-link">
-      <div class="entertainment-card">
-        <div class="entertainment-icon">
-          <i class="fas fa-star"></i>
+      <a href="{{ url_for('foh.index') }}" class="entertainment-card-link">
+        <div class="entertainment-card">
+          <div class="entertainment-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <h3 class="entertainment-title">Face of HESA</h3>
+          <p class="entertainment-description">
+            Support your favorite contestant in the Face of HESA! Cast your vote
+            and be part of the celebration of beauty, talent, and leadership.
+            Stay tuned for the main event! </p>
         </div>
-        <h3 class="entertainment-title">Face of HESA</h3>
-        <p class="entertainment-description">
-          Celebrate the talent and diversity within our student body with this spotlight event. We're planning something special—stay tuned!
-        </p>
-      </div>
-    </a>
+      </a>
 
       <div class="entertainment-card">
         <div class="entertainment-icon">
           <i class="fas fa-utensils"></i>
         </div>
         <h3 class="entertainment-title">HESA Dinner</h3>
-        <p class="entertainment-description">A relaxed evening of good food and great company—come connect with fellow students and celebrate the semester together. More details coming soon!</p>
+        <p class="entertainment-description">A relaxed evening of good food and
+          great company—come connect with fellow students and celebrate the
+          semester together. More details coming soon!</p>
       </div>
-      
-      
+
       <div class="entertainment-card">
         <div class="entertainment-icon">
           <i class="fas fa-calendar-alt"></i>
         </div>
         <h3 class="entertainment-title">Surprise Event</h3>
-        <p class="entertainment-description">We’ve got something exciting in the works! Keep an eye out for announcements on a major event you won’t want to miss.</p>
+        <p class="entertainment-description">We’ve got something exciting in the
+          works! Keep an eye out for announcements on a major event you won’t
+          want to miss.</p>
       </div>
     </div>
   </div>
 </section>
-
 
 <!-- Personality of the Week Section (Redesigned) -->
 <section class="potw-section">
@@ -1076,18 +1112,20 @@
       <!-- Image Side -->
       <div class="potw-image">
         {% if potw %}
-        {{ render_image(potw.image_file, 'potw_pics/', 'img/default_potw.jpg', potw.name) }}
+        {{ render_image(potw.image_file, 'potw_pics/', 'img/default_potw.jpg',
+        potw.name) }}
         {% else %}
-        <img src="{{ url_for('static', filename='img/default_potw.jpg') }}" alt="Personality of the Week">
+        <img src="{{ url_for('static', filename='img/default_potw.jpg') }}"
+          alt="Personality of the Week">
         {% endif %}
       </div>
-      
+
       <!-- Content Side -->
       <div class="potw-content">
         <h2>Personality of the Week</h2>
         {% if potw %}
         <!-- <p>Meet our outstanding student who exemplifies academic excellence and community leadership</p> -->
-        
+
         <div class="feature-list">
           <div class="feature-item">
             <div class="feature-icon">
@@ -1098,7 +1136,7 @@
               <p>{{ potw.year }}</p>
             </div>
           </div>
-          
+
           <div class="feature-item">
             <div class="feature-icon">
               <i class="fas fa-school"></i>
@@ -1108,7 +1146,7 @@
               <p>Alumni</p>
             </div>
           </div>
-          
+
           <div class="feature-item">
             <div class="feature-icon">
               <i class="fas fa-quote-left"></i>
@@ -1119,10 +1157,12 @@
             </div>
           </div>
         </div>
-        
-        <a href="{{ url_for('main.potw') }}" class="cta-button">Read Full Profile</a>
+
+        <a href="{{ url_for('main.potw') }}" class="cta-button">Read Full
+          Profile</a>
         {% else %}
-        <p>No personality featured this week. Check back soon to meet our next outstanding student!</p>
+        <p>No personality featured this week. Check back soon to meet our next
+          outstanding student!</p>
         {% endif %}
       </div>
     </div>
@@ -1135,8 +1175,10 @@
     <div class="bus-tracker-content">
       <div class="bus-tracker-left">
         <h2 class="bus-tracker-title">HESA Gallery</h2>
-        <p class="bus-tracker-description">Explore vibrant moments from campus life! Our gallery showcases events, achievements, and the spirit that makes our college unique.</p>
-        
+        <p class="bus-tracker-description">Explore vibrant moments from campus
+          life! Our gallery showcases events, achievements, and the spirit that
+          makes our college unique.</p>
+
         <div class="bus-benefits">
           <div class="benefit-item">
             <div class="benefit-icon">
@@ -1147,7 +1189,7 @@
               <!-- <p>Catch glimpses of memorable college events</p> -->
             </div>
           </div>
-          
+
           <div class="benefit-item">
             <div class="benefit-icon">
               <i class="fas fa-graduation-cap"></i>
@@ -1157,7 +1199,7 @@
               <!-- <p>See how our students are making a mark</p> -->
             </div>
           </div>
-          
+
           <div class="benefit-item">
             <div class="benefit-icon">
               <i class="fas fa-users"></i>
@@ -1168,12 +1210,14 @@
             </div>
           </div>
         </div>
-        
-        <a href="{{ url_for('gallery.index') }}" class="hero-cta">View Gallery</a>
+
+        <a href="{{ url_for('gallery.index') }}" class="hero-cta">View
+          Gallery</a>
       </div>
-      
+
       <div class="bus-tracker-right">
-        <img src="{{ url_for('static', filename='img/gallery (1).jpg') }}" alt="College Gallery Preview" class="bus-tracker-img">
+        <img src="{{ url_for('static', filename='img/gallery (1).jpg') }}"
+          alt="College Gallery Preview" class="bus-tracker-img">
       </div>
     </div>
   </div>

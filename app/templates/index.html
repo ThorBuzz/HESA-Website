@@ -53,6 +53,21 @@
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             transform: translateZ(0);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Add dark overlay for better text readability */
+        section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4); /* Dark overlay */
+            z-index: 1;
         }
 
         .nav {
@@ -86,6 +101,7 @@
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.4s ease, transform 0.4s ease;
+            position: relative;
         }
 
         section.active .content {
@@ -93,25 +109,46 @@
             transform: translateY(0);
         }
 
-        /* Updated color schemes for each section */
+        /* Background images for each section - REPLACE THESE PATHS WITH YOUR ACTUAL IMAGE PATHS */
         section:nth-child(1) {
-            background: linear-gradient(45deg, #1E3A8A, #3B82F6); /* Blue theme for bus tracking */
+            background-image: url('https://knust-hesa-images.s3.amazonaws.com/uploads/gallery/50461d4d401f49e694b65a3cac4b644c_IMG-20250622-WA0454.jpg'); /* Welcome/Homepage background */
         }
         
         section:nth-child(2) {
-            background: linear-gradient(45deg, #006400, #32CD32); /* Green theme */
+            background-image: url('https://knust-hesa-images.s3.amazonaws.com/uploads/gallery/30025d5cbbdf4025adc500025b20258c_IMG-20250622-WA0480.jpg'); /* Bus tracking background */
         }
         
         section:nth-child(3) {
-            background: linear-gradient(45deg, #7B2CBF, #9D4EDD); /* Purple theme for blog */
+            background-image: url('https://knust-hesa-images.s3.amazonaws.com/uploads/gallery/0b7423b1a3b84c2ab5794fe57759407c_IMG-20250622-WA0501.jpg'); /* Blog background */
         }
 
         section:nth-child(4) {
-            background: linear-gradient(45deg, #FFA500, #FF4500); /* Red-orange for events */
+            background-image: url('https://knust-hesa-images.s3.amazonaws.com/uploads/gallery/abb7af363f2548c7a631120399ad4cee_a1.jpg'); /* Events background */
         }
 
         section:nth-child(5) {
-            background: linear-gradient(45deg, #0077B6, #90E0EF); /* Blue-teal for personality */
+            background-image: url('https://knust-hesa-images.s3.amazonaws.com/uploads/gallery/a29a5572c1c44bbbb1201a3fc7893363_IMG-20250622-WA0536.jpg'); /* Personality of the week background */
+        }
+
+        /* Fallback gradients in case images don't load */
+        section:nth-child(1) {
+            background-color: #1E3A8A;
+        }
+        
+        section:nth-child(2) {
+            background-color: #006400;
+        }
+        
+        section:nth-child(3) {
+            background-color: #7B2CBF;
+        }
+
+        section:nth-child(4) {
+            background-color: #FFA500;
+        }
+
+        section:nth-child(5) {
+            background-color: #0077B6;
         }
 
         .floating-shapes {
@@ -121,6 +158,7 @@
             top: 0;
             left: 0;
             pointer-events: none;
+            z-index: 2;
         }
 
         .floating-shapes div {
@@ -147,12 +185,14 @@
         h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Better text visibility */
         }
 
         p {
             font-size: 1.2rem;
             max-width: 600px;
             margin: 0 auto;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Better text visibility */
         }
 
         .btn {
@@ -165,6 +205,7 @@
             border: 2px solid white;
             border-radius: 30px;
             transition: all 0.3s ease;
+            backdrop-filter: blur(10px); /* Glass effect */
         }
 
         .btn:hover {
@@ -186,6 +227,7 @@
             content: '↓';
             color: white;
             font-size: 2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
         }
 
         /* Animations */
@@ -234,6 +276,11 @@
                 padding: 0.8rem 1.5rem;
                 font-size: 0.9rem;
             }
+
+            /* Adjust overlay for mobile */
+            section::before {
+                background: rgba(0, 0, 0, 0.5);
+            }
         }
 
         @media (max-width: 480px) {
@@ -246,12 +293,34 @@
                 width: 80%;
                 margin: 1rem auto;
             }
+
+            /* Stronger overlay for small screens */
+            section::before {
+                background: rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        /* Loading state for images */
+        .image-loading {
+            background: linear-gradient(45deg, #333, #666);
+            position: relative;
+        }
+
+        .image-loading::after {
+            content: 'Loading...';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.2rem;
+            z-index: 5;
         }
     </style>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbuild.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbuild.js"></script>
     <script>
         (adsbuild = window.adsbuild || []).push({
-            google_ad_client: "ca-pub-5887715921307109", // Replace with your publisher ID
+            google_ad_client: "ca-pub-5887715921307109",
             enable_page_level_ads: true
         });
     </script>
@@ -275,7 +344,7 @@
                     <div class="shape4"></div>
                 </div>
                 <div class="content">
-                    <h1>Welcome to College of Health and Allied Sciences KNUST</h1>
+                    <h1>Welcome to College of Health Sciences KNUST</h1>
                     <p>The Future of health care training in Ghana and Beyond</p>
                     <a href="{{ url_for('main.home') }}" class="btn">Homepage</a>
                     <a href="#" class="btn section-link" data-target="1">Explore More</a>
@@ -362,16 +431,45 @@ document.addEventListener('DOMContentLoaded', function() {
     let animationFrame;
     let scrollTimeout;
     
+    // Image preloading function
+    function preloadImages() {
+        const imageUrls = [
+            'https://knust-hesa-images.s3.amazonaws.com/uploads/gallery/50461d4d401f49e694b65a3cac4b644c_IMG-20250622-WA0454.jpg',
+            'https://knust-hesa-images.s3.amazonaws.com/uploads/gallery/30025d5cbbdf4025adc500025b20258c_IMG-20250622-WA0480.jpg',
+            'https://knust-hesa-images.s3.amazonaws.com/uploads/gallery/0b7423b1a3b84c2ab5794fe57759407c_IMG-20250622-WA0501.jpg',
+            'https://knust-hesa-images.s3.amazonaws.com/uploads/gallery/abb7af363f2548c7a631120399ad4cee_a1.jpg',
+            'https://knust-hesa-images.s3.amazonaws.com/uploads/gallery/a29a5572c1c44bbbb1201a3fc7893363_IMG-20250622-WA0536.jpg'
+        ];
+        
+        imageUrls.forEach((url, index) => {
+            const img = new Image();
+            img.onload = function() {
+                // Remove loading class when image loads
+                const section = sections[index];
+                if (section) {
+                    section.classList.remove('image-loading');
+                }
+            };
+            img.onerror = function() {
+                console.warn(`Failed to load image: ${url}`);
+                // Keep fallback gradient if image fails
+            };
+            img.src = url;
+        });
+    }
+    
     // Set up section heights and positions
     function setupSections() {
         sections.forEach((section, index) => {
             section.style.position = 'absolute';
             section.style.top = `${index * 100}%`;
             
+            // Add loading class initially
+            section.classList.add('image-loading');
+            
             // Keep animations running all the time
             const shapes = section.querySelectorAll('.floating-shapes div');
             shapes.forEach(shape => {
-                // Ensure animations remain active
                 shape.style.visibility = 'visible';
             });
         });
@@ -380,6 +478,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize
     setupSections();
+    preloadImages();
     
     // Function to navigate to a section
     function goToSection(index, animate = true) {
@@ -390,7 +489,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (index >= sections.length) index = sections.length - 1;
         
         if (currentIndex === index) {
-            // Just in case, ensure we're at the correct position
             sectionContainer.style.transform = `translate3d(0, -${index * 100}%, 0)`;
             return;
         }
@@ -408,20 +506,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (i === index) {
                 section.classList.add('active');
                 
-                // Ensure content fades in nicely
                 const content = section.querySelector('.content');
                 if (content) {
                     content.style.opacity = '0';
                     content.style.transform = 'translateY(20px)';
                     
-                    // Small delay to allow for transform to start
                     setTimeout(() => {
                         content.style.opacity = '1';
                         content.style.transform = 'translateY(0)';
                     }, 300);
                 }
             } else {
-                // Don't remove active immediately for smoother transitions
                 setTimeout(() => {
                     if (currentIndex !== i) {
                         section.classList.remove('active');
@@ -437,35 +532,28 @@ document.addEventListener('DOMContentLoaded', function() {
             sectionContainer.style.transition = 'none';
         }
         
-        // Use translate3d for hardware acceleration
         sectionContainer.style.transform = `translate3d(0, -${index * 100}%, 0)`;
         
-        // Reset scrolling flag after animation completes
         scrollTimeout = setTimeout(() => {
             isScrolling = false;
         }, animate ? 650 : 0);
     }
     
-    // Handle wheel event for scrolling - strict one-section-at-a-time approach
+    // Handle wheel event for scrolling
     let wheelTimeout = null;
     
     function handleWheel(e) {
         e.preventDefault();
         
-        // If we're already scrolling or have a pending wheel action, ignore this event
         if (isScrolling || wheelTimeout !== null) return;
         
-        // Set a timeout flag to ignore subsequent wheel events completely
         wheelTimeout = setTimeout(() => {
             wheelTimeout = null;
-        }, 1200); // Keep this longer than animation time to ensure complete animation
+        }, 1200);
         
-        // Only check the direction, not the strength of scroll
         if (e.deltaY > 0) {
-            // Scroll down - one section only, no matter how strong
             goToSection(currentIndex + 1);
         } else {
-            // Scroll up - one section only, no matter how strong
             goToSection(currentIndex - 1);
         }
     }
@@ -490,10 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
         startY = lastY = e.touches[0].clientY;
         startTime = Date.now();
         
-        // Stop any transition during touch drag for better performance
         sectionContainer.style.transition = 'none';
-        
-        // Cancel any ongoing animation
         cancelAnimationFrame(animationFrame);
     }
     
@@ -503,23 +588,18 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         lastY = e.touches[0].clientY;
         
-        // Calculate how far we've moved as a percentage of screen height
         const deltaY = startY - lastY;
         const percentMoved = (deltaY / window.innerHeight) * 100;
         
-        // Only apply transform if we're not at the edges, or if we are but trying to bounce back
         if ((currentIndex > 0 || deltaY < 0) && (currentIndex < sections.length - 1 || deltaY > 0)) {
-            // Apply a resistance factor when at the edges
             let transformValue = -currentIndex * 100;
             
             if ((currentIndex === 0 && deltaY < 0) || (currentIndex === sections.length - 1 && deltaY > 0)) {
-                // Add resistance at edges - only move 1/3 as far
                 transformValue -= percentMoved / 3;
             } else {
                 transformValue -= percentMoved;
             }
             
-            // Use translate3d for hardware acceleration
             sectionContainer.style.transform = `translate3d(0, ${transformValue}%, 0)`;
         }
     }
@@ -527,32 +607,25 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleTouchEnd(e) {
         if (isScrolling) return;
         
-        // Re-enable transitions
         sectionContainer.style.transition = 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)';
         
         const endY = e.changedTouches[0].clientY;
         const deltaY = startY - endY;
         
-        // Only consider direction, not strength - create a strict threshold behavior
-        if (Math.abs(deltaY) > 50) { // Small threshold to differentiate from tap/click
+        if (Math.abs(deltaY) > 50) {
             if (deltaY > 0) {
-                // Swipe up - go to next section (only 1 section)
                 goToSection(currentIndex + 1);
             } else {
-                // Swipe down - go to previous section (only 1 section)
                 goToSection(currentIndex - 1);
             }
         } else {
-            // Not enough movement, snap back to current section
             goToSection(currentIndex);
         }
     }
     
-    // Event Listeners - direct reference to the function
+    // Event Listeners
     window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('keydown', handleKeydown);
-    
-    // Touch events for mobile
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('touchend', handleTouchEnd);
@@ -575,19 +648,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Handle resizing
     window.addEventListener('resize', () => {
-        // Immediately snap to current section without animation
         goToSection(currentIndex, false);
     });
     
     // Initialize the first section
     sections[0].classList.add('active');
     
-    // Preload and trigger animations for better performance
+    // Force reflow for better performance
     window.addEventListener('load', function() {
-        // Force a reflow on all sections to ensure animations are loaded
         sections.forEach(section => {
             section.style.display = 'none';
-            section.offsetHeight; // Force reflow
+            section.offsetHeight;
             section.style.display = '';
         });
     });
