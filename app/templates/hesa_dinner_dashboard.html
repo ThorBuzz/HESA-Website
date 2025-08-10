@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excellence Awards Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* Header */
+        header {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .admin-badge {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #1a1a2e;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* Main Dashboard */
+        .dashboard {
+            padding: 40px 0;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffd700, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dashboard-header p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        /* Form Panel */
+        .form-panel {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: 1px solid rgba(255,215,0,0.3);
+            padding: 40px;
+            height: fit-content;
+        }
+
+        .form-panel h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #ffd700;
+            text-align: center;
+        }
+
+        .form-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 5px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            color: #ffffff;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ffd700;
+            background: rgba(255,255,255,0.15);
+            box-shadow: 0 0 20px rgba(255,215,0,0.2);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 15px;
+            background: rgba(255,215,0,0.1);
+            border: 2px dashed rgba(255,215,0,0.5);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-label:hover {
+            background: rgba(255,215,0,0.2);
+            border-color: #ffd700;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-family: inherit;
+            box-shadow: 0 10px 30px rgba(255,215,0,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(255,215,0,0.4);
+        }
+
+        /* Preview Panel */
+        .preview-panel {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: 1px solid rgba(255,215,0,0.2);
+            padding: 40px;
+        }
+
+        .preview-panel h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #ffd700;
+            text-align: center;
+        }
+
+        .categories-list {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .category-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,215,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .category-item:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            font-size: 1.3rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .category-icon {
+            font-size: 2rem;
+        }
+
+        .delete-btn {
+            background: rgba(255,0,0,0.2);
+            border: 1px solid rgba(255,0,0,0.4);
+            color: #ff6b6b;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: rgba(255,0,0,0.3);
+            transform: scale(1.05);
+        }
+
+        .nominees-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .nominee-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+        }
+
+        .nominee-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 10px;
+            display: block;
+            border: 2px solid rgba(255,215,0,0.3);
+        }
+
+        .nominee-image.placeholder {
+            background: rgba(255,215,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #ffd700;
+        }
+
+        .nominee-name {
+            font-size: 0.9rem;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .nominee-delete {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            opacity: 0.6;
+            padding: 40px;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        /* Export Section */
+        .export-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: 1px solid rgba(255,215,0,0.3);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .export-section h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .export-section p {
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .export-code {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            text-align: left;
+            overflow-x: auto;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .copy-btn {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+            color: #ffd700;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,215,0,0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nominees-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated background particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">Woven 2025 Admin</div>
+                <div class="admin-badge">Administrator Dashboard</div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Dashboard -->
+    <section class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Awards Management</h1>
+                <p>Create award categories and manage nominees for the Excellence Awards Gala 2025</p>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Form Panel -->
+                <div class="form-panel">
+                    <h2>Add New Content</h2>
+                    
+                    <div class="form-tabs">
+                        <button class="tab-button active" onclick="switchTab('category')">New Category</button>
+                        <button class="tab-button" onclick="switchTab('nominee')">Add Nominee</button>
+                    </div>
+
+                    <!-- Category Form -->
+                    <div id="category-tab" class="tab-content active">
+                        <form id="category-form" onsubmit="addCategory(event)">
+                            <div class="form-group">
+                                <label for="category-name">Category Name</label>
+                                <input type="text" id="category-name" placeholder="e.g., Best Innovation Award" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="category-description">Description</label>
+                                <textarea id="category-description" rows="3" placeholder="Brief description of this award category"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="category-icon">Icon Emoji</label>
+                                <input type="text" id="category-icon" placeholder="🏆" maxlength="2">
+                            </div>
+                            
+                            <button type="submit" class="btn-primary">Create Category</button>
+                        </form>
+                    </div>
+
+                    <!-- Nominee Form -->
+                    <div id="nominee-tab" class="tab-content">
+                        <form id="nominee-form" onsubmit="addNominee(event)">
+                            <div class="form-group">
+                                <label for="nominee-category">Select Category</label>
+                                <select id="nominee-category" required>
+                                    <option value="">Choose a category...</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="nominee-name">Nominee Name</label>
+                                <input type="text" id="nominee-name" placeholder="Full name of nominee" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="nominee-image">Profile Image</label>
+                                <div class="file-upload">
+                                    <input type="file" id="nominee-image" accept="image/*" onchange="previewImage(event)">
+                                    <label for="nominee-image" class="file-upload-label">
+                                        <span id="file-label">📁 Choose image file</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn-primary">Add Nominee</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Preview Panel -->
+                <div class="preview-panel">
+                    <h2>Current Awards</h2>
+                    <div class="categories-list" id="categories-list">
+                        <div class="empty-state">
+                            <h3>No categories yet</h3>
+                            <p>Create your first award category to get started</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Section -->
+            <div class="export-section">
+                <h2>Export Data</h2>
+                <p>Generate the HTML code to update your awards webpage with the current categories and nominees</p>
+                
+                <button class="btn-primary" onclick="generateExportCode()">Generate Awards HTML</button>
+                
+                <div id="export-output" style="display: none;">
+                    <div class="export-code" id="export-code"></div>
+                    <button class="copy-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Data storage
+        let categories = [];
+        let currentImageData = null;
+
+        // Initialize particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 15;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Update buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        // Image preview
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImageData = e.target.result;
+                    document.getElementById('file-label').textContent = `📁 ${file.name}`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Add category
+        function addCategory(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('category-name').value;
+            const description = document.getElementById('category-description').value;
+            const icon = document.getElementById('category-icon').value || '🏆';
+            
+            const category = {
+                id: Date.now().toString(),
+                name,
+                description,
+                icon,
+                nominees: []
+            };
+            
+            categories.push(category);
+            updateUI();
+            
+            // Reset form
+            document.getElementById('category-form').reset();
+            
+            // Show success
+            alert('Category created successfully!');
+        }
+
+        // Add nominee
+        function addNominee(event) {
+            event.preventDefault();
+            
+            const categoryId = document.getElementById('nominee-category').value;
+            const name = document.getElementById('nominee-name').value;
+            
+            if (!currentImageData) {
+                alert('Please select an image for the nominee');
+                return;
+            }
+            
+            const category = categories.find(cat => cat.id === categoryId);
+            if (category) {
+                const nominee = {
+                    id: Date.now().toString(),
+                    name,
+                    image: currentImageData
+                };
+                
+                category.nominees.push(nominee);
+                updateUI();
+                
+                // Reset form
+                document.getElementById('nominee-form').reset();
+                currentImageData = null;
+                document.getElementById('file-label').textContent = '📁 Choose image file';
+                
+                alert('Nominee added successfully!');
+            }
+        }
+
+        // Update UI
+        function updateUI() {
+            updateCategoriesList();
+            updateCategorySelect();
+        }
+
+        // Update categories display
+        function updateCategoriesList() {
+            const container = document.getElementById('categories-list');
+            
+            if (categories.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No categories yet</h3>
+                        <p>Create your first award category to get started</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = categories.map(category => `
+                <div class="category-item">
+                    <div class="category-header">
+                        <div>
+                            <span class="category-icon">${category.icon}</span>
+                            <span class="category-title">${category.name}</span>
+                        </div>
+                        <button class="delete-btn" onclick="deleteCategory('${category.id}')">Delete</button>
+                    </div>
+                    ${category.description ? `<p style="margin-bottom: 15px; opacity: 0.8;">${category.description}</p>` : ''}
+                    <div class="nominees-grid">
+                        ${category.nominees.map(nominee => `
+                            <div class="nominee-card">
+                                <button class="nominee-delete" onclick="deleteNominee('${category.id}', '${nominee.id}')">×</button>
+                                <img src="${nominee.image}" alt="${nominee.name}" class="nominee-image">
+                                <div class="nominee-name">${nominee.name}</div>
+                            </div>
+                        `).join('')}
+                        ${category.nominees.length === 0 ? '<div style="grid-column: 1/-1; text-align: center; opacity: 0.6;">No nominees yet</div>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update category select
+        function updateCategorySelect() {
+            const select = document.getElementById('nominee-category');
+            select.innerHTML = '<option value="">Choose a category...</option>' +
+                categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+        }
+
+        // Delete category
+        function deleteCategory(categoryId) {
+            if (confirm('Are you sure you want to delete this category and all its nominees?')) {
+                categories = categories.filter(cat => cat.id !== categoryId);
+                updateUI();
+            }
+        }
+
+        // Delete nominee
+        function deleteNominee(categoryId, nomineeId) {
+            if (confirm('Are you sure you want to delete this nominee?')) {
+                const category = categories.find(cat => cat.id === categoryId);
+                if (category) {
+                    category.nominees = category.nominees.filter(nom => nom.id !== nomineeId);
+                    updateUI();
+                }
+            }
+        }
+
+        // Generate export code
+        function generateExportCode() {
+            if (categories.length === 0) {
+                alert('Please create at least one category before exporting');
+                return;
+            }
+
+            const html = `<!-- Awards Categories with Nominees -->
+<section id="awards" class="section">
+    <div class="container">
+        <h2>Award Categories & Nominees</h2>
+        <div class="awards-grid">
+            ${categories.map(category => `
+            <div class="award-category">
+                <div class="award-item">
+                    <span class="award-icon">${category.icon}</span>
+                    <h3>${category.name}</h3>
+                    ${category.description ? `<p>${category.description}</p>` : ''}
+                </div>
+                <div class="nominees-section">
+                    <h4>Nominees:</h4>
+                    <div class="nominees-list">
+                        ${category.nominees.map(nominee => `
+                        <div class="nominee-item">
+                            <img src="${nominee.image}" alt="${nominee.name}" class="nominee-photo">
+                            <span class="nominee-name">${nominee.name}</span>
+                        </div>`).join('')}
+                    </div>
+                </div>
+            </div>`).join('')}
+        </div>
+    </div>
+</section>
+
+<!-- Add this CSS to your existing stylesheet -->
+<style>
+.award-category {
+    margin-bottom: 40px;
+}
+
+.nominees-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+}
+
+.nominees-section h4 {
+    color: #ffd700;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.nominees-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.nominee-item {
+    text-align: center;
+    padding: 15px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.nominee-item:hover {
+    transform: translateY(-5px);
+    background: rgba(255,215,0,0.1);
+}
+
+.nominee-photo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 2px solid rgba(255,215,0,0.3);
+}
+
+.nominee-name {
+    display: block;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+</style>`;
+
+            document.getElementById('export-code').textContent = html;
+            document.getElementById('export-output').style.display = 'block';
+        }
+
+        // Copy to clipboard
+        function copyToClipboard() {
+            const code = document.getElementById('export-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Code copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            createParticles();
+            updateUI();
+        });
+    </script>
+</body>
+</html>
